@@ -199,8 +199,8 @@ STRINGS = {
             "❗️ В группе <b>бот видит только ответы на свою панель</b> — присылайте всё "
             "ответом на неё.\n\n"
             "<b>Как считается:</b> время делят поровну все, кто играл в этот момент. "
-            "Столов не больше, чем пар игроков: 1–3 человека — один стол, 4–5 — до двух. "
-            "Сколько их было на самом деле, бот выводит из суммы взносов и цены за час."
+            "Сколько было столов, бот считает сам — по числу игроков в каждый период, "
+            "общей сумме взносов и цене за час."
         ),
         "en": (
             "🏓 <b>How it works</b>\n\n"
@@ -216,9 +216,8 @@ STRINGS = {
             "❗️ In a group <b>the bot only sees replies to its own panel</b> — send everything "
             "as a reply to it.\n\n"
             "<b>How it's counted:</b> everyone playing at a given moment shares that time "
-            "equally. There are no more tables than pairs of players: 1–3 people are one "
-            "table, 4–5 up to two. How many there really were, the bot works out from the "
-            "total paid and the hourly price."
+            "equally. The bot works out how many tables there were itself — from the number "
+            "of players in each period, the total paid and the hourly price."
         ),
     },
 }
