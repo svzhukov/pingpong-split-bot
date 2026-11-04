@@ -759,7 +759,8 @@ def tap_paid(s: Session, parts):
     except ValueError:
         return None
 
-    s.set_paid(player_id, s.paid_by(player_id) + delta)
+    # set_paid replaces the payment, so the window it covered goes back in with it
+    s.set_paid(player_id, s.paid_by(player_id) + delta, *(s.paid_span(player_id) or ()))
     return None
 
 

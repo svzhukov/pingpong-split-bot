@@ -209,6 +209,8 @@ Opening 🕐 Время for someone on `-` gives them the session's span straigh
 away (earliest start to latest end among the others, 19:00–21:00 when nobody
 has a time), ready to nudge; opening 💰 Взнос for someone on `-` sets it to 0.
 Очистить on either screen puts that value back to `-` and steps back to the player.
+On 💰 Взнос, −10 / −1 / ＋1 / ＋10 nudge the amount — never below 0, and a
+payment tied to a window (`12.5 21:30-22:15`) keeps its window.
 
 A player with no time yet counts toward nothing — they stay out of the split
 and the ИТОГО block until their time is in.
