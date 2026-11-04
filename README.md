@@ -11,9 +11,22 @@ person arrived and left.
 20:00–21:00  Sasha, Nina, Misha, Pasha  16 ₾ ÷ 4 = 4.00 ₾ each
 ```
 
-The hourly rate is only an estimator. As soon as anyone records a contribution,
-the total comes from the money actually put in, and the rate stops mattering —
-so the session title drops its `· N ₾/час` part from then on (Settings still shows it).
+The hourly rate is the price of one table. Until anyone records a contribution,
+everything is estimated from it. Once money is in, the total is the money
+actually put in, and it is spread like this:
+
+- **One or two players** can only be on one table, so those stretches cost the
+  hourly rate, split between whoever is there.
+- **Three or more** may have taken any number of tables, so whatever money is
+  left is spread over those stretches by length.
+- **Not enough money for one table the whole session** means the rate is off, so
+  every minute is priced alike instead.
+- **Money tied to a window** (`12.5 21:30-22:15`) is spread over that window by
+  length: it already says what that window cost.
+
+So someone who stays on alone pays one table's price for that time, not the
+evening's average, which includes the tables the whole group took. The session
+title drops its `· N ₾/час` part once money is in (Settings still shows it).
 
 Interface is Russian by default, English available in Settings.
 

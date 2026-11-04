@@ -704,11 +704,36 @@ def within(slices, frm, to):
     return [i for i, s in enumerate(slices) if s.frm >= frm and s.to <= to]
 
 
-def share_out(payments, slices, players):
+ONE_TABLE = 2   # this many players or fewer can only be on one table
+
+
+def even_parts(slices, covered, amount) -> Dict[int, float]:
+    width = float(sum(slices[i].to - slices[i].frm for i in covered))
+    return {i: amount * (slices[i].to - slices[i].frm) / width for i in covered}
+
+
+def priced_parts(slices, covered, amount, rate) -> Dict[int, float]:
+    """A slice with one or two players is one table, so it costs the hourly
+    price; what's left goes to the busier slices by length, since how many
+    tables they took is unknown. Money short of one table for the whole span
+    says the price doesn't match what was paid, so every minute is priced alike."""
+    busy = [i for i in covered if len(slices[i].present) > ONE_TABLE]
+    minutes = sum(slices[i].to - slices[i].frm for i in covered)
+    if not busy or rate <= 0 or amount < rate * minutes / 60:
+        return even_parts(slices, covered, amount)
+
+    parts = {i: rate * (slices[i].to - slices[i].frm) / 60 for i in covered if i not in busy}
+    parts.update(even_parts(slices, busy, amount - sum(parts.values())))
+    return parts
+
+
+def share_out(payments, slices, players, rate):
     """Each payment is spread only across the slices it bought, and within a
     slice split equally between whoever was on court. Money with no window
     covers whatever no windowed payment claimed — so you only have to mark the
-    odd one out, and the rest still adds up."""
+    odd one out, and the rest still adds up. Only that money prices one-table
+    slices at the hourly rate: a windowed payment already says what its window
+    cost."""
     owed = {p.id: 0.0 for p in players}
     buckets, claimed = {}, set()
 
@@ -726,9 +751,12 @@ def share_out(payments, slices, players):
         width = float(sum(slices[i].to - slices[i].frm for i in covered))
         if width <= 0:
             continue
-        for i in covered:
+        if frm is None:
+            parts = priced_parts(slices, covered, amount, rate)
+        else:
+            parts = even_parts(slices, covered, amount)
+        for i, part in parts.items():
             s = slices[i]
-            part = amount * (s.to - s.frm) / width
             for p in s.present:
                 owed[p.id] += part / len(s.present)
 
@@ -772,7 +800,7 @@ def compute(session: Session) -> Result:
         factor = 1.0 if estimate > 0 else 0.0
         owed = {key: value * factor for key, value in expected.items()}
     else:
-        owed = share_out(session.payments, slices, session.players)
+        owed = share_out(session.payments, slices, session.players, session.rate)
 
     total_cost = estimate if estimated else total_paid
 
