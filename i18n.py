@@ -61,6 +61,7 @@ STRINGS = {
     "btn_span_del": {"ru": "🗑 Убрать окно", "en": "🗑 Remove window"},
     "btn_paid": {"ru": "💰 Взнос", "en": "💰 Paid"},
     "btn_clear": {"ru": "Очистить", "en": "Clear"},
+    "unit_min": {"ru": "мин", "en": "min"},
     "btn_solo_on": {"ru": "☑ Платит отдельно", "en": "☑ Settles separately"},
     "btn_solo_off": {"ru": "☐ Платит отдельно", "en": "☐ Settles separately"},
     "btn_style_plain": {"ru": "Моно", "en": "Mono"},

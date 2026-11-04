@@ -57,13 +57,17 @@ def cell(row: Row) -> str:
     return bidi_safe(clip(raw_tag(row)))
 
 
-def steps(player_id: str, index: int, size: int) -> List[Button]:
+def nudge_label(delta: int, unit: str) -> str:
+    return "{}{} {}".format("−" if delta < 0 else "＋", abs(delta), unit)
+
+
+def steps(s: Session, player_id: str, index: int, size: int) -> List[Button]:
     """One row of nudges: minus/plus for the start, then the same for the end,
     so each half sits under its own header button."""
-    return [("{}{}".format(sign, size),
+    return [(nudge_label(delta, t(s.lang, "unit_min")),
              "time:{}:{}:{}:{}".format(player_id, index, field, delta))
             for field in ("frm", "to")
-            for sign, delta in (("−", -size), ("＋", size))]
+            for delta in (-size, size)]
 
 
 def render(session: Session) -> Tuple[str, str, Keyboard]:
@@ -340,8 +344,9 @@ def screen_time(s: Session, r: Result):
     keyboard += [
         [(t(s.lang, "btn_from", time=fmt_time(frm)), "askt:{}:{}:frm".format(p.id, index)),
          (t(s.lang, "btn_to", time=fmt_time(to)), "askt:{}:{}:to".format(p.id, index))],
-        steps(p.id, index, 15),
-        steps(p.id, index, 60),
+        steps(s, p.id, index, 5),
+        steps(s, p.id, index, 15),
+        steps(s, p.id, index, 60),
     ]
     if len(p.spans) > 1:
         keyboard.append([(t(s.lang, "btn_span_del"), "span:del:{}:{}".format(p.id, index))])
@@ -355,11 +360,7 @@ def screen_time(s: Session, r: Result):
     return player_title(s, p), player_body(s, label, hint), keyboard
 
 
-PAID_STEPS = (-10, -1, 1, 10)
-
-
-def nudge_label(s: Session, delta: int) -> str:
-    return "{}{} {}".format("−" if delta < 0 else "＋", abs(delta), s.currency)
+PAID_STEPS = (1, 5, 10)
 
 
 def screen_pay(s: Session, r: Result):
@@ -368,10 +369,12 @@ def screen_pay(s: Session, r: Result):
         s.screen = "home"
         return screen_home(s, r)
 
-    keyboard = [
-        [("✏ {}".format(paid_text(s, p.paid_set, s.paid_by(p.id))), "ask:amount"),
-         (t(s.lang, "btn_clear"), "paid:{}:clear".format(p.id))],
-        [(nudge_label(s, delta), "paid:{}:{}".format(p.id, delta)) for delta in PAID_STEPS],
+    keyboard = [[("✏ {}".format(paid_text(s, p.paid_set, s.paid_by(p.id))), "ask:amount")]]
+    keyboard += [[(nudge_label(delta, s.currency), "paid:{}:{}".format(p.id, delta))
+                  for delta in (-size, size)]
+                 for size in PAID_STEPS]
+    keyboard += [
+        [(t(s.lang, "btn_clear"), "paid:{}:clear".format(p.id))],
         [(t(s.lang, "btn_back"), "nav:player:" + p.id)],
     ]
 
@@ -461,9 +464,9 @@ def screen_settings(s: Session, r: Result):
         [(("◉ " if rounding_key(s) == key else "○ ") + t(s.lang, "btn_round_" + key),
           "set:round:{:g}".format(step))
          for step, key in zip(ROUNDING_STEPS, ROUNDING_KEYS)],
-        [(nudge_label(s, -1), "set:rate:-1"),
+        [(nudge_label(-1, s.currency), "set:rate:-1"),
          ("✏ {}".format(t(s.lang, "txt_rate_button", rate=s.rate, cur=s.currency)), "ask:rate"),
-         (nudge_label(s, 1), "set:rate:1")],
+         (nudge_label(1, s.currency), "set:rate:1")],
         [(t(s.lang, "btn_copy_session"), "copy"),
          (t(s.lang, "btn_close_session"), "nav:close")],
         [(t(s.lang, "btn_back"), "nav:home")],
