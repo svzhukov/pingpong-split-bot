@@ -141,8 +141,8 @@ returns to the main screen.
 
 The guide — both the `/help` reply and the panel's ❓ Как это работает screen —
 opens with a three-step image (`/split` → copy the table → reply with the rows)
-shown as a large link preview above the text (a photo caption caps at 1024
-characters; the guide is longer). The image is `assets/faq-guide.png`,
+shown as a large link preview above the text, so the guide isn't held to a
+photo caption's 1024 characters. The image is `assets/faq-guide.png`,
 served from a public gist at a revision-pinned URL (`FAQ_IMAGE_URL` in `bot.py`).
 Telegram caches previews per URL, so to change the picture push a new revision to
 the gist and point `FAQ_IMAGE_URL` at it. Every other panel screen sends with

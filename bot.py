@@ -52,8 +52,8 @@ def markup(keyboard: Keyboard) -> InlineKeyboardMarkup:
     ])
 
 
-# a caption caps at 1024 characters and the FAQ is longer, so the screenshot
-# rides above the text as a link preview; the URL is pinned to a gist revision,
+# a caption caps at 1024 characters, so the screenshot rides above the text as
+# a link preview and the guide can be any length; the URL is pinned to a gist revision,
 # because Telegram caches previews per URL — a new image needs a new revision
 FAQ_IMAGE_URL = ("https://gist.githubusercontent.com/svzhukov/232fe370500a628be15c14afa77f4ff6"
                  "/raw/5a1689a300db1bebc647ff678e44c1219a0acde4/faq-guide.png")
