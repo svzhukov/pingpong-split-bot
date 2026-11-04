@@ -187,7 +187,7 @@ STRINGS = {
     "help": {
         "ru": (
             "🏓 <b>Как это работает</b>\n\n"
-            "Строка таблицы: <b>имя время взнос</b>, именно в этом порядке — "
+            "Формат для любой команды одинаковый: <b>имя время взнос</b>, именно в этом порядке — "
             "<code>@маша 20:30-22:00 50</code>. Взнос не указан — значит 0.\n\n"
             "<b>Команды</b>\n"
             "<code>/split</code> — новая сессия; можно сразу с именами или взносом: "
@@ -205,7 +205,7 @@ STRINGS = {
         ),
         "en": (
             "🏓 <b>How it works</b>\n\n"
-            "Table row: <b>name time paid</b>, in exactly this order — "
+            "The format is the same for every command: <b>name time paid</b>, in exactly this order — "
             "<code>@masha 20:30-22:00 50</code>. No amount means 0.\n\n"
             "<b>Commands</b>\n"
             "<code>/split</code> — new session; you can start with names or a payment: "
