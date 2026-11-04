@@ -4,7 +4,8 @@ from typing import List, Optional, Tuple
 
 from i18n import t
 from model import (CURRENCIES, ROUNDING_STEPS, Session, Result, Row, Player, compute, settle,
-                   fmt_time, fmt_span, fmt_spans, fmt_dur, fmt_money, money_step, plural_ru)
+                   fmt_time, fmt_span, fmt_spans, fmt_dur, fmt_money, money_step, plural_ru,
+                   transfer_minimum)
 
 Button = Tuple[str, str]
 Keyboard = List[List[Button]]
@@ -440,7 +441,8 @@ def screen_debt(s: Session, r: Result):
 
 def screen_settings(s: Session, r: Result):
     check = " ✓"
-    text = "{}\n{}\n\n{}\n{}\n\n{}\n{}\n\n{}\n{}\n{}".format(
+    minimum = transfer_minimum(s)
+    text = "{}\n{}\n\n{}\n{}\n\n{}\n{}\n\n{}\n{}\n{}\n\n{}\n{}\n{}".format(
         bold(t(s.lang, "lbl_language")),
         "🇷🇺 Русский" if s.lang == "ru" else "🇬🇧 English",
         bold(t(s.lang, "lbl_style")),
@@ -452,9 +454,12 @@ def screen_settings(s: Session, r: Result):
         bold(t(s.lang, "lbl_rate")),
         bold(t(s.lang, "txt_rate_line", rate=s.rate, cur=s.currency)),
         t(s.lang, "txt_tap_price"),
+        bold(t(s.lang, "lbl_min_transfer")),
+        bold(money(s, minimum)),
+        t(s.lang, "txt_min_transfer"),
     )
 
-    rate_step = money_step(s.currency, 1)
+    unit = money_step(s.currency, 1)
     keyboard = [
         [(t(s.lang, "btn_lang_ru") + (check if s.lang == "ru" else ""), "set:lang:ru"),
          (t(s.lang, "btn_currency"), "nav:currency"),
@@ -464,9 +469,12 @@ def screen_settings(s: Session, r: Result):
         [(("◉ " if rounding_key(s) == key else "○ ") + t(s.lang, "btn_round_" + key),
           "set:round:{:g}".format(step))
          for step, key in zip(ROUNDING_STEPS, ROUNDING_KEYS)],
-        [(nudge_label(-rate_step, s.currency), "set:rate:{}".format(-rate_step)),
+        [(nudge_label(-unit, s.currency), "set:rate:{}".format(-unit)),
          ("✏ {}".format(t(s.lang, "txt_rate_button", rate=s.rate, cur=s.currency)), "ask:rate"),
-         (nudge_label(rate_step, s.currency), "set:rate:{}".format(rate_step))],
+         (nudge_label(unit, s.currency), "set:rate:{}".format(unit))],
+        [(nudge_label(-unit, s.currency), "set:min:{}".format(-unit)),
+         ("✏ {}".format(t(s.lang, "txt_min_button", money=money(s, minimum))), "ask:mintransfer"),
+         (nudge_label(unit, s.currency), "set:min:{}".format(unit))],
         [(t(s.lang, "btn_copy_session"), "copy"),
          (t(s.lang, "btn_close_session"), "nav:close")],
         [(t(s.lang, "btn_back"), "nav:home")],
@@ -523,7 +531,7 @@ def summary(s: Session) -> str:
         # the useful answer is what each of them owes
         return owed_summary(s, r)
 
-    transfers = settle(r.rows)
+    transfers = settle(r.rows, transfer_minimum(s), float(s.rounding or 0))
 
     if transfers:
         moves = "\n".join(

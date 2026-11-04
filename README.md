@@ -286,7 +286,7 @@ case-insensitively, and never expire.
 In SQLite (`pingpong.db`):
 
 - **The active session**, per group — survives restarts, so the panel keeps working.
-- **The rate, currency, language, rounding and table style**, per group.
+- **The rate, currency, language, rounding, table style and minimum transfer**, per group.
 - **Every session copy**, by its code.
 
 Past sessions aren't stored. The posted settle-up message in the group is the
@@ -318,13 +318,25 @@ Rounding to whole amounts is on by default. Shares are apportioned by largest
 remainder, and any sub-unit residue lands on the largest balance, so the
 transfers always cancel exactly.
 
-Transfers are planned for the fewest payments, and among plans with that count
-the one that spreads them most evenly — nobody sends three while someone else
-sends one (then the same evenness for who receives). Each plan walks payers and
-receivers in some order, each payer filling receivers until their debt runs out;
-every ordering is tried. That search runs on every redraw, so past 800 orderings
-(e.g. 5 payers × 4 receivers, 386 ms on the VM) only the largest-first ordering
-is used; 4 × 4 and 5 × 3 are still searched.
+Transfers are planned to avoid crumbs first: a debt is never split into
+transfers below the **minimum transfer** in Settings, even at the cost of one more
+transfer, while a debt or a due that is itself below it still goes in one. The
+minimum defaults to three of the smallest money step — 3 ₾, 30 ₽, 300 ֏
+(`MIN_TRANSFER_STEPS`) — can be nudged or typed in, and goes back to that default
+when the currency changes. After that, the fewest payments, and among plans with
+that count the one that spreads them most evenly — nobody sends three while
+someone else sends one (then the same evenness for who receives).
+
+Each plan walks payers and receivers in some order, each payer filling receivers
+until their debt runs out. Every pairing of orders is tried while there are at
+most 800 of them (4 × 4 and 5 × 3 are); past that, each side's orders are tried
+against the other kept largest-first, and a side of 7 or more isn't reordered.
+Walking like that splits a payer only where a receiver fills up, which forces a
+crumb with few receivers — six people owing about 12 to two owed 37.5 and 35
+leaves someone sending 1 — so a crumb left in the chosen plan is mended: two
+payers split the same pair of receivers instead, and every balance stays as it
+was. A payer owing less than twice the minimum can't be split that way, so a
+small crumb can still remain when debts are that close to it.
 
 A Telegram outage can poison the HTTP pool and leave polling hung forever
 without the process exiting. A watchdog probes the same connection every

@@ -99,6 +99,12 @@ STRINGS = {
     "lbl_rate": {"ru": "Цена за час", "en": "Price per hour"},
     "txt_tap_price": {"ru": "Нажмите на цену и ответьте на это сообщение своей.",
                       "en": "Tap the price, then reply to this message with your own."},
+    "lbl_min_transfer": {"ru": "Минимальный перевод", "en": "Minimum transfer"},
+    "txt_min_transfer": {"ru": "Долг не дробится на переводы меньше этой суммы; "
+                               "долг меньше неё переводят одним платежом.",
+                         "en": "A debt is never split into transfers smaller than this; "
+                               "a smaller debt is sent in one transfer."},
+    "txt_min_button": {"ru": "мин. {money}", "en": "min {money}"},
     "lbl_language": {"ru": "Язык", "en": "Language"},
     "lbl_rounding": {"ru": "Округление", "en": "Rounding"},
 

@@ -25,7 +25,8 @@ COPY_ALPHABET = "abcdefghjkmnpqrstuvwxyz23456789"
 COPY_LENGTH = 10
 # what a copy carries: everything that decides the numbers, nothing about the
 # chat it was made in
-COPIED_FIELDS = ("date", "rate", "currency", "rounding", "players", "payments", "debts")
+COPIED_FIELDS = ("date", "rate", "currency", "rounding", "min_transfer",
+                 "players", "payments", "debts")
 
 
 def copy_code(session: "Session") -> str:
@@ -100,6 +101,16 @@ STEP_SCALE = {"₽": 10, "₴": 10, "₺": 10, "֏": 100}
 
 def money_step(currency: str, step: int) -> int:
     return step * STEP_SCALE.get(currency, 1)
+
+
+MIN_TRANSFER_STEPS = 3
+
+
+def transfer_minimum(session: "Session") -> float:
+    """What the group set, or else three of the smallest money step: 3 ₾, 30 ₽."""
+    if session.min_transfer is not None:
+        return session.min_transfer
+    return money_step(session.currency, MIN_TRANSFER_STEPS)
 PREFIXED = {"$", "€"}
 NBSP = "\u00a0"
 
@@ -527,6 +538,7 @@ class Session:
     lang: str = "ru"
     rounding: float = 1.0
     blocks: bool = False
+    min_transfer: Optional[float] = None    # None: the currency's default
     settled_at: Optional[str] = None
     status: str = "open"
     editor: Optional[str] = None
@@ -639,6 +651,7 @@ class Session:
             lang=raw.get("lang", "ru"),
             rounding=float(raw.get("rounding", 1) or 0),
             blocks=raw.get("blocks", False),
+            min_transfer=raw.get("min_transfer"),
             settled_at=raw.get("settled_at"),
             status=raw.get("status") or ("closed" if raw.get("settled_at") else "open"),
             editor=raw.get("editor"),
@@ -857,10 +870,10 @@ def compute(session: Session) -> Result:
     )
 
 
-# every ordering of payers × receivers is tried, and settle runs on each panel
-# redraw on a slow one-core VM; past this many combinations (4 payers × 4
-# receivers is 576, 5 × 3 is 720, 5 × 4 is 2 880) the largest-first ordering
-# alone is used
+# every ordering of payers × receivers is tried on a slow one-core VM; past this
+# many combinations (4 payers × 4 receivers is 576, 5 × 3 is 720, 5 × 4 is
+# 2 880) each side's orderings are tried only against the other side kept
+# largest-first, and a side with more orderings than this isn't reordered
 SETTLE_SEARCH_LIMIT = 800
 
 
@@ -887,20 +900,92 @@ def staircase(owing, due) -> List[Transfer]:
     return transfers
 
 
-def plan_score(transfers: List[Transfer]):
-    """Fewest transfers first; among those, nobody should be stuck sending
-    most of them — then the same evenness on the receiving side."""
+def plan_score(transfers: List[Transfer], minimum: float):
+    """Fewest transfers under the minimum first — a debt that is itself smaller
+    still goes in one, but a bigger one is never split into such crumbs, even
+    at the cost of an extra transfer. Then fewest transfers; among those, nobody
+    should be stuck sending most of them, then the same on the receiving side."""
     sent: Dict[str, int] = {}
     got: Dict[str, int] = {}
     for x in transfers:
         sent[x.frm.id] = sent.get(x.frm.id, 0) + 1
         got[x.to.id] = got.get(x.to.id, 0) + 1
-    return (len(transfers),
+    return (sum(1 for x in transfers if x.amount < minimum - 0.005),
+            len(transfers),
             max(sent.values(), default=0), sum(n * n for n in sent.values()),
             max(got.values(), default=0), sum(n * n for n in got.values()))
 
 
-def settle(rows: List[Row]) -> List[Transfer]:
+def orderings(owing, due):
+    if math.factorial(len(owing)) * math.factorial(len(due)) <= SETTLE_SEARCH_LIMIT:
+        return itertools.product(itertools.permutations(owing), itertools.permutations(due))
+
+    pairs = []
+    if math.factorial(len(owing)) <= SETTLE_SEARCH_LIMIT:
+        pairs += [(payers, due) for payers in itertools.permutations(owing)]
+    if math.factorial(len(due)) <= SETTLE_SEARCH_LIMIT:
+        pairs += [(owing, receivers) for receivers in itertools.permutations(due)]
+    return pairs
+
+
+def mend(transfers: List[Transfer], minimum: float, step: float) -> List[Transfer]:
+    """A staircase splits a payer only where a receiver fills up, so with few
+    receivers a crumb can be forced: six owing about 12 to two owed 37.5 and 35
+    leaves someone topping the first up with 1. Two payers splitting the same
+    pair of receivers avoids it — the crumb's payer moves part of its other
+    transfer onto the crumb, and another payer into the same receiver moves as
+    much the other way, so every balance stays as it was. A crumb is left alone
+    when its payer's whole debt, or its receiver's whole due, is that small."""
+    plan = [[x.frm, x.to, x.amount] for x in transfers]
+
+    def sends(row):
+        return sum(x[2] for x in plan if x[0] is row)
+
+    def gets(row):
+        return sum(x[2] for x in plan if x[1] is row)
+
+    def snap(amount):
+        return round(amount / step) * step if step else amount
+
+    def enough(amount):
+        return amount >= minimum - 0.005
+
+    def mend_one() -> bool:
+        for crumb in plan:
+            payer, receiver, small = crumb
+            if enough(small) or not enough(sends(payer)) or not enough(gets(receiver)):
+                continue
+            for other in (x for x in plan if x[0] is payer and x is not crumb):
+                for donor in (x for x in plan if x[1] is receiver and x[0] is not payer):
+                    joined = next((x for x in plan if x[0] is donor[0] and x[1] is other[1]), None)
+                    low = max(minimum - small, 0.0 if joined else minimum)
+                    high = min(donor[2] - minimum, other[2] - minimum)
+                    # evening the crumb with the donor is the aim; the whole of
+                    # the other transfer, emptying it, is the fallback
+                    for moved in (snap(min(max((donor[2] - small) / 2, low), high)), other[2]):
+                        if (moved > 0.005 and enough(small + moved) and enough(donor[2] - moved)
+                                and (enough(other[2] - moved) or other[2] - moved <= 0.005)
+                                and (joined or enough(moved))):
+                            break
+                    else:
+                        continue
+                    crumb[2] += moved
+                    other[2] -= moved
+                    donor[2] -= moved
+                    if joined:
+                        joined[2] += moved
+                    else:
+                        plan.append([donor[0], other[1], moved])
+                    plan[:] = [x for x in plan if x[2] > 0.005]
+                    return True
+        return False
+
+    while mend_one():
+        pass
+    return [Transfer(frm=a, to=b, amount=c) for a, b, c in plan]
+
+
+def settle(rows: List[Row], minimum: float = 0.0, step: float = 0.0) -> List[Transfer]:
     rows = [r for r in rows if not r.excluded]
     owing = sorted([(r, -r.settle_balance) for r in rows if r.settle_balance < -0.005],
                    key=lambda x: -x[1])
@@ -908,14 +993,10 @@ def settle(rows: List[Row]) -> List[Transfer]:
                  key=lambda x: -x[1])
 
     best = staircase(owing, due)
-    if math.factorial(len(owing)) * math.factorial(len(due)) > SETTLE_SEARCH_LIMIT:
-        return best
-
-    best_score = plan_score(best)
-    for payers in itertools.permutations(owing):
-        for receivers in itertools.permutations(due):
-            plan = staircase(payers, receivers)
-            score = plan_score(plan)
-            if score < best_score:
-                best, best_score = plan, score
-    return best
+    best_score = plan_score(best, minimum)
+    for payers, receivers in orderings(owing, due):
+        plan = staircase(payers, receivers)
+        score = plan_score(plan, minimum)
+        if score < best_score:
+            best, best_score = plan, score
+    return mend(best, minimum, step)

@@ -21,7 +21,7 @@ from model import (BLANK, CURRENCY_RE, DAY, DEFAULT_LENGTH, NAME_LIMIT, SYMBOL_B
                    Session, clamp_span,
                    compute, extract_span, fmt_money, parse_paid, parse_roster,
                    parse_amount_note, parse_table, sheet_export_url,
-                   COPIED_FIELDS, copy_code, new_id, parse_entry, parse_time)
+                   COPIED_FIELDS, copy_code, new_id, parse_entry, parse_time, transfer_minimum)
 from render import (Keyboard, plain_title, players_label, posted_title, render, summary,
                     table_csv)
 from store import Store
@@ -154,9 +154,10 @@ def handle_of(user) -> str:
 
 
 def blank_session(chat_id: int) -> Session:
-    rate, currency, lang, rounding, blocks = store.settings(chat_id)
+    rate, currency, lang, rounding, blocks, min_transfer = store.settings(chat_id)
     return Session(chat_id=chat_id, date=datetime.now().strftime("%d.%m.%y"),
-                   rate=rate, currency=currency, lang=lang, rounding=rounding, blocks=blocks)
+                   rate=rate, currency=currency, lang=lang, rounding=rounding, blocks=blocks,
+                   min_transfer=min_transfer)
 
 
 def looks_like_table(args: str) -> bool:
@@ -601,6 +602,7 @@ def apply_tap(s: Session, data: str) -> Optional[str]:
             "time": "txt_send_time",
             "amount": "txt_send_amount",
             "rate": "txt_send_rate",
+            "mintransfer": "txt_send_amount",
             "rename": "txt_send_rename",
         }[parts[1]])
 
@@ -725,6 +727,8 @@ def tap_settings(s: Session, parts):
 
     if key == "rate":
         s.rate = max(0, s.rate + int(value))
+    elif key == "min":
+        s.min_transfer = max(0, transfer_minimum(s) + int(value))
     elif key == "lang" and value in LANGUAGES:
         s.lang = value
     elif key == "round":
@@ -733,8 +737,10 @@ def tap_settings(s: Session, parts):
         s.blocks = value == "1"
     elif key == "cur":
         s.currency = SYMBOL_BY_CODE.get(value, s.currency)
+        # an amount set in one currency means nothing in another
+        s.min_transfer = None
 
-    store.remember_settings(s.chat_id, s.rate, s.currency, s.lang, s.rounding, s.blocks)
+    store.remember_settings(s)
     return None
 
 
@@ -936,7 +942,15 @@ def handle_awaited(s: Session, text: str) -> bool:
         if amount is None:
             return False
         s.rate = int(amount)
-        store.remember_settings(s.chat_id, s.rate, s.currency, s.lang, s.rounding, s.blocks)
+        store.remember_settings(s)
+        return True
+
+    if s.awaiting == "mintransfer":
+        amount = to_number(text)
+        if amount is None:
+            return False
+        s.min_transfer = amount
+        store.remember_settings(s)
         return True
 
     return False
