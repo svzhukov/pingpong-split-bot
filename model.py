@@ -94,6 +94,12 @@ def plural_ru(count: int, one: str, few: str, many: str) -> str:
 CURRENCIES = [("GEL", "₾"), ("RUB", "₽"), ("AMD", "֏"), ("AZN", "₼"),
               ("UAH", "₴"), ("TRY", "₺"), ("USD", "$"), ("EUR", "€")]
 SYMBOL_BY_CODE = dict(CURRENCIES)
+# a step that suits ₾ is lost in ₽ or ֏, so money buttons scale by currency
+STEP_SCALE = {"₽": 10, "₴": 10, "₺": 10, "֏": 100}
+
+
+def money_step(currency: str, step: int) -> int:
+    return step * STEP_SCALE.get(currency, 1)
 PREFIXED = {"$", "€"}
 NBSP = "\u00a0"
 

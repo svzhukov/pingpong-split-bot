@@ -4,7 +4,7 @@ from typing import List, Optional, Tuple
 
 from i18n import t
 from model import (CURRENCIES, ROUNDING_STEPS, Session, Result, Row, Player, compute, settle,
-                   fmt_time, fmt_span, fmt_spans, fmt_dur, fmt_money, plural_ru)
+                   fmt_time, fmt_span, fmt_spans, fmt_dur, fmt_money, money_step, plural_ru)
 
 Button = Tuple[str, str]
 Keyboard = List[List[Button]]
@@ -360,7 +360,7 @@ def screen_time(s: Session, r: Result):
     return player_title(s, p), player_body(s, label, hint), keyboard
 
 
-PAID_STEPS = (1, 5, 10)
+PAID_STEPS = (1, 5, 20)
 
 
 def screen_pay(s: Session, r: Result):
@@ -372,7 +372,7 @@ def screen_pay(s: Session, r: Result):
     keyboard = [[("✏ {}".format(paid_text(s, p.paid_set, s.paid_by(p.id))), "ask:amount")]]
     keyboard += [[(nudge_label(delta, s.currency), "paid:{}:{}".format(p.id, delta))
                   for delta in (-size, size)]
-                 for size in PAID_STEPS]
+                 for size in (money_step(s.currency, step) for step in PAID_STEPS)]
     keyboard += [
         [(t(s.lang, "btn_clear"), "paid:{}:clear".format(p.id))],
         [(t(s.lang, "btn_back"), "nav:player:" + p.id)],
@@ -454,6 +454,7 @@ def screen_settings(s: Session, r: Result):
         t(s.lang, "txt_tap_price"),
     )
 
+    rate_step = money_step(s.currency, 1)
     keyboard = [
         [(t(s.lang, "btn_help"), "nav:help")],
         [(t(s.lang, "btn_lang_ru") + (check if s.lang == "ru" else ""), "set:lang:ru"),
@@ -464,9 +465,9 @@ def screen_settings(s: Session, r: Result):
         [(("◉ " if rounding_key(s) == key else "○ ") + t(s.lang, "btn_round_" + key),
           "set:round:{:g}".format(step))
          for step, key in zip(ROUNDING_STEPS, ROUNDING_KEYS)],
-        [(nudge_label(-1, s.currency), "set:rate:-1"),
+        [(nudge_label(-rate_step, s.currency), "set:rate:{}".format(-rate_step)),
          ("✏ {}".format(t(s.lang, "txt_rate_button", rate=s.rate, cur=s.currency)), "ask:rate"),
-         (nudge_label(1, s.currency), "set:rate:1")],
+         (nudge_label(rate_step, s.currency), "set:rate:{}".format(rate_step))],
         [(t(s.lang, "btn_copy_session"), "copy"),
          (t(s.lang, "btn_close_session"), "nav:close")],
         [(t(s.lang, "btn_back"), "nav:home")],

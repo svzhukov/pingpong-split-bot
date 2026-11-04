@@ -209,8 +209,11 @@ Opening 🕐 Время for someone on `-` gives them the session's span straigh
 away (earliest start to latest end among the others, 19:00–21:00 when nobody
 has a time), ready to nudge; opening 💰 Взнос for someone on `-` sets it to 0.
 Очистить on either screen puts that value back to `-` and steps back to the player.
-On 💰 Взнос, rows of −1 / ＋1, −5 / ＋5 and −10 / ＋10 nudge the amount — never
+On 💰 Взнос, rows of −1 / ＋1, −5 / ＋5 and −20 / ＋20 nudge the amount — never
 below 0, and a payment tied to a window (`12.5 21:30-22:15`) keeps its window.
+Those steps, and the ±1 next to the hourly price in Settings, are for ₾, ₼, $
+and €; in ₽, ₴ and ₺ they are ten times larger (±10 / ±50 / ±200, price ±10),
+in ֏ a hundred times (`STEP_SCALE` in `model.py`).
 Like 🕐 Время's 5, 15 and 60 мин rows (start on the left, end on the right),
 they sit between the ✏ buttons and Очистить, which on both screens is a row of
 its own, the last one above ‹ Назад.
