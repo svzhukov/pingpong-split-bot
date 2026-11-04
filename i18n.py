@@ -200,11 +200,7 @@ STRINGS = {
             "ответом на неё.\n\n"
             "<b>Как считается</b>\n"
             "Время делят поровну все, кто играл в этот момент; сколько столов — неважно. "
-            "Цена за час нужна, только пока никто не указал взнос.\n\n"
-            "<b>Платит отдельно</b>\n"
-            "Игрок вне переводов, например рассчитывается наличными: его взнос "
-            "учитывается, а разница делится поровну между остальными.\n\n"
-            "Остальное — кнопками на панели."
+            "Цена за час нужна, только пока никто не указал взнос."
         ),
         "en": (
             "🏓 <b>How it works</b>\n\n"
@@ -221,11 +217,7 @@ STRINGS = {
             "as a reply to it.\n\n"
             "<b>How it's counted</b>\n"
             "Everyone playing at a given moment shares that time equally; the number of "
-            "tables doesn't matter. The hourly price only matters until someone enters a payment.\n\n"
-            "<b>Settles separately</b>\n"
-            "The player is left out of transfers, say paying cash: their payment still "
-            "counts, and the difference is split evenly among the rest.\n\n"
-            "Everything else — with the buttons on the panel."
+            "tables doesn't matter. The hourly price only matters until someone enters a payment."
         ),
     },
 }
