@@ -198,9 +198,9 @@ STRINGS = {
             "<code>/panel</code> — вернуть панель вниз, если она утонула в чате\n\n"
             "❗️ В группе <b>бот видит только ответы на свою панель</b> — присылайте всё "
             "ответом на неё.\n\n"
-            "<b>Как считается</b>\n"
-            "Время делят поровну все, кто играл в этот момент; сколько столов — неважно. "
-            "Цена за час нужна, только пока никто не указал взнос."
+            "<b>Как считается:</b> время делят поровну все, кто играл в этот момент; "
+            "сколько столов — неважно. Цена за час нужна, только пока никто не указал "
+            "взнос; после этого она нигде не учитывается."
         ),
         "en": (
             "🏓 <b>How it works</b>\n\n"
@@ -215,9 +215,9 @@ STRINGS = {
             "<code>/panel</code> — bring the panel back down if chat buried it\n\n"
             "❗️ In a group <b>the bot only sees replies to its own panel</b> — send everything "
             "as a reply to it.\n\n"
-            "<b>How it's counted</b>\n"
-            "Everyone playing at a given moment shares that time equally; the number of "
-            "tables doesn't matter. The hourly price only matters until someone enters a payment."
+            "<b>How it's counted:</b> everyone playing at a given moment shares that time "
+            "equally; the number of tables doesn't matter. The hourly price is only needed "
+            "until someone enters a payment; after that it isn't counted anywhere."
         ),
     },
 }
