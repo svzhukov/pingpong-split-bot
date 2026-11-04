@@ -15,17 +15,26 @@ The hourly rate is the price of one table. Until anyone records a contribution,
 everything is estimated from it. Once money is in, the total is the money
 actually put in, and it is spread like this:
 
-- **One or two players** can only be on one table, so those stretches cost the
-  hourly rate, split between whoever is there.
-- **Three or more** may have taken any number of tables, so whatever money is
-  left is spread over those stretches by length.
-- **Not enough money for one table the whole session** means the rate is off, so
-  every minute is priced alike instead.
+- **Tables are bounded by the players**: at least one, at most one per pair
+  (`max_tables` in `model.py`) — 1–3 players are one table, 4–5 one or two,
+  6–7 up to three.
+- **The money says how many table-hours there were**: paid ÷ rate. Every stretch
+  starts at one table, and the rest is shared in proportion to each stretch's
+  room for more.
+- **A stretch costs** its tables × its length × the rate, split equally between
+  whoever was playing.
+- **Less money than one table for the whole session** means the rate is off, so
+  every minute is priced alike instead. **More than every stretch's maximum**
+  means the rate is higher than set, so every stretch sits at its maximum,
+  scaled up to the money.
 - **Money tied to a window** (`12.5 21:30-22:15`) is spread over that window by
   length: it already says what that window cost.
 
-So someone who stays on alone pays one table's price for that time, not the
-evening's average, which includes the tables the whole group took. The session
+5 people for an hour, then 3 for another, with 48 ₾ paid at 16 ₾/час: that is 3
+table-hours, one table each hour plus the one extra the five had room for, so
+the first hour is 2 tables (32 ₾ ÷ 5) and the second one (16 ₾ ÷ 3). Someone who
+stays on alone pays one table's price for that time, not the evening's average,
+which includes the tables the whole group took. The session
 title always ends with that price, `· 16 ₾/час`, since it counts both before and
 after money is in.
 

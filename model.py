@@ -704,7 +704,10 @@ def within(slices, frm, to):
     return [i for i, s in enumerate(slices) if s.frm >= frm and s.to <= to]
 
 
-ONE_TABLE = 2   # this many players or fewer can only be on one table
+def max_tables(players: int) -> int:
+    """One table per pair, and a lone player still holds one: 1–3 players are
+    one table, 4–5 up to two, 6–7 up to three."""
+    return max(1, players // 2)
 
 
 def even_parts(slices, covered, amount) -> Dict[int, float]:
@@ -712,28 +715,33 @@ def even_parts(slices, covered, amount) -> Dict[int, float]:
     return {i: amount * (slices[i].to - slices[i].frm) / width for i in covered}
 
 
-def priced_parts(slices, covered, amount, rate) -> Dict[int, float]:
-    """A slice with one or two players is one table, so it costs the hourly
-    price; what's left goes to the busier slices by length, since how many
-    tables they took is unknown. Money short of one table for the whole span
-    says the price doesn't match what was paid, so every minute is priced alike."""
-    busy = [i for i in covered if len(slices[i].present) > ONE_TABLE]
-    minutes = sum(slices[i].to - slices[i].frm for i in covered)
-    if not busy or rate <= 0 or amount < rate * minutes / 60:
+def table_parts(slices, covered, amount, rate) -> Dict[int, float]:
+    """Nobody enters how many tables a slice took, but it is bounded — at
+    least one, at most max_tables — and the money over the hourly price says
+    how many table-hours there were in all. Every slice starts at one table and
+    the rest is shared in proportion to each slice's room for more. Money short
+    of one table throughout means the price doesn't match what was paid, so
+    every minute is priced alike; money past every slice's maximum means the
+    price is higher than set, so every slice sits at its maximum, scaled up."""
+    minutes = {i: slices[i].to - slices[i].frm for i in covered}
+    room = {i: max_tables(len(slices[i].present)) - 1 for i in covered}
+    base = sum(minutes.values())
+    spare = sum(minutes[i] * room[i] for i in covered)
+    if rate <= 0 or amount < rate * base / 60:
         return even_parts(slices, covered, amount)
 
-    parts = {i: rate * (slices[i].to - slices[i].frm) / 60 for i in covered if i not in busy}
-    parts.update(even_parts(slices, busy, amount - sum(parts.values())))
-    return parts
+    share = min(1.0, (amount / rate * 60 - base) / spare) if spare else 0.0
+    weights = {i: minutes[i] * (1 + share * room[i]) for i in covered}
+    total = sum(weights.values())
+    return {i: amount * weights[i] / total for i in covered}
 
 
 def share_out(payments, slices, players, rate):
     """Each payment is spread only across the slices it bought, and within a
     slice split equally between whoever was on court. Money with no window
     covers whatever no windowed payment claimed — so you only have to mark the
-    odd one out, and the rest still adds up. Only that money prices one-table
-    slices at the hourly rate: a windowed payment already says what its window
-    cost."""
+    odd one out, and the rest still adds up. Only that money works out tables
+    from the hourly rate: a windowed payment already says what its window cost."""
     owed = {p.id: 0.0 for p in players}
     buckets, claimed = {}, set()
 
@@ -752,7 +760,7 @@ def share_out(payments, slices, players, rate):
         if width <= 0:
             continue
         if frm is None:
-            parts = priced_parts(slices, covered, amount, rate)
+            parts = table_parts(slices, covered, amount, rate)
         else:
             parts = even_parts(slices, covered, amount)
         for i, part in parts.items():
