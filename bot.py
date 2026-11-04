@@ -21,7 +21,7 @@ from model import (BLANK, CURRENCY_RE, DAY, DEFAULT_LENGTH, NAME_LIMIT, SYMBOL_B
                    Session, clamp_span,
                    compute, extract_span, fmt_money, parse_paid, parse_roster,
                    parse_amount_note, parse_table, sheet_export_url,
-                   new_id, parse_entry, parse_time)
+                   new_copy_code, new_id, parse_entry, parse_time)
 from render import (Keyboard, plain_title, players_label, posted_title, render, summary,
                     table_csv)
 from store import Store
@@ -224,6 +224,16 @@ def session_from_table(chat_id: int, rows) -> Session:
     return session
 
 
+def copied_session(chat_id: int, source: Session) -> Session:
+    """Everything that decides the numbers comes from the copy; how the chat
+    reads it — language, table style — stays this chat's own."""
+    session = blank_session(chat_id)
+    session.date, session.rate, session.currency, session.rounding = \
+        source.date, source.rate, source.currency, source.rounding
+    session.players, session.payments, session.debts = source.players, source.payments, source.debts
+    return session
+
+
 def fresh_session(chat_id: int, roster) -> Session:
     session = blank_session(chat_id)
     add_roster(session, roster)
@@ -325,7 +335,10 @@ async def replace_panel(session: Session, line: str) -> None:
 
 async def start_session(chat_id: int, user, args: str, reply) -> None:
     export = sheet_export_url(args or "")
-    if export:
+    source = store.load_copy((args or "").strip().lower())
+    if source:
+        session = copied_session(chat_id, source)
+    elif export:
         try:
             body = await fetch_sheet(export)
         except Exception as err:
@@ -615,6 +628,12 @@ def apply_tap(s: Session, data: str) -> Optional[str]:
 
     if head == "debtdel":
         s.debts = [d for d in s.debts if d.id != parts[1]]
+        return None
+
+    if head == "copy":
+        code = new_copy_code()
+        store.save_copy(code, s)
+        s.screen, s.focus = "copy", {"code": code}
         return None
 
     return None

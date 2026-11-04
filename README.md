@@ -132,6 +132,7 @@ There are two, and they're the same command.
 | `/split @misha @pasha masha` | Start with those players, tagged or not — time and paid show `-` until each fills them in |
 | `/split @misha 19-21 @pasha 20-22` | …with a time each — a time belongs only to the name before it |
 | `/split <Google Sheets link>` | Reads the table from the sheet |
+| `/split <code>` | Opens a copy of a session from another chat — see Copying a session |
 
 `/start` and `/help` print the FAQ. Everything else is buttons.
 
@@ -223,19 +224,34 @@ across everyone else.
 
 ## Closing without settling
 
-⚙️ Настройки → 🗑 Закрыть сессию (the last row, above ‹ Назад) asks once — it
+⚙️ Настройки → 🗑 Закрыть сессию (the last row, above ‹ Назад, right of 📋 Копировать сессию) asks once — it
 names how many players and how much money are in the session — and on 🗑 Да,
 закрыть deletes the session outright. No settle-up is posted; the panel is left
 as one line, `🗑 Сессия 03.11.26 закрыта @misha без расчёта`, with no buttons,
 and the next `/split` starts fresh without asking. The group's settings — rate,
 currency, language, rounding, table style — stay.
 
+## Copying a session
+
+⚙️ Настройки → 📋 Копировать сессию saves a snapshot of the session as it is
+at that tap and shows a command like `/split k3mq7xwd2p` — tap it in Telegram
+to copy it. Sent in any other chat (or the same one), it opens that snapshot as
+a new session: the same players, times, payments, debts, date, rate, currency and
+rounding, while the language and table style stay that chat's own. It replaces
+whatever session the chat has like any other `/split`, asking first when that
+one has players.
+
+Every tap makes a new code, so edits made after copying never reach it — tap
+again for a fresh one. Codes are 10 characters with no 0/o or 1/l/i, matched
+case-insensitively, and never expire.
+
 ## What gets remembered
 
-Per group, in SQLite (`pingpong.db`):
+In SQLite (`pingpong.db`):
 
-- **The active session** — survives restarts, so the panel keeps working.
-- **The rate, currency, language, rounding and table style.**
+- **The active session**, per group — survives restarts, so the panel keeps working.
+- **The rate, currency, language, rounding and table style**, per group.
+- **Every session copy**, by its code.
 
 Past sessions aren't stored. The posted settle-up message in the group is the
 record, and ⬇️ Скачать таблицу exports the current one as TSV.

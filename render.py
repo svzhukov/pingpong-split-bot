@@ -456,7 +456,8 @@ def screen_settings(s: Session, r: Result):
         [("−1 {}".format(s.currency), "set:rate:-1"),
          ("✏ {}".format(t(s.lang, "txt_rate_button", rate=s.rate, cur=s.currency)), "ask:rate"),
          ("＋1 {}".format(s.currency), "set:rate:1")],
-        [(t(s.lang, "btn_close_session"), "nav:close")],
+        [(t(s.lang, "btn_copy_session"), "copy"),
+         (t(s.lang, "btn_close_session"), "nav:close")],
         [(t(s.lang, "btn_back"), "nav:home")],
     ]
 
@@ -467,6 +468,17 @@ def players_label(s: Session) -> str:
     n = len(s.players)
     return t(s.lang, "txt_players_count", n=n,
              word=plural_ru(n, "игрок", "игрока", "игроков"))
+
+
+def screen_copy(s: Session, r: Result):
+    code = s.focus.get("code")
+    if not code:
+        s.screen = "settings"
+        return screen_settings(s, r)
+
+    text = "{}\n\n<code>/split {}</code>\n\n{}".format(
+        t(s.lang, "txt_copy_send"), e(code), t(s.lang, "txt_copy_tap"))
+    return t(s.lang, "title_copy"), text, [[(t(s.lang, "btn_back"), "nav:settings")]]
 
 
 def screen_close(s: Session, r: Result):
@@ -546,4 +558,5 @@ SCREENS = {
     "currency": screen_currency,
     "help": screen_help,
     "close": screen_close,
+    "copy": screen_copy,
 }

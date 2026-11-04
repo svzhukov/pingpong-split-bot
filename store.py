@@ -18,6 +18,11 @@ CREATE TABLE IF NOT EXISTS settings (
     rounding REAL NOT NULL DEFAULT 1,
     blocks INTEGER NOT NULL DEFAULT 0
 );
+
+CREATE TABLE IF NOT EXISTS copies (
+    code TEXT PRIMARY KEY,
+    payload TEXT NOT NULL
+);
 """
 
 
@@ -55,6 +60,15 @@ class Store:
     def delete(self, chat_id: int) -> None:
         self.db.execute("DELETE FROM sessions WHERE chat_id = ?", (chat_id,))
         self.db.commit()
+
+    def save_copy(self, code: str, session: Session) -> None:
+        self.db.execute("INSERT INTO copies (code, payload) VALUES (?, ?)",
+                        (code, json.dumps(session.to_dict(), ensure_ascii=False)))
+        self.db.commit()
+
+    def load_copy(self, code: str) -> Optional[Session]:
+        row = self.db.execute("SELECT payload FROM copies WHERE code = ?", (code,)).fetchone()
+        return Session.from_dict(json.loads(row["payload"])) if row else None
 
     def settings(self, chat_id: int) -> Tuple[int, str, str, float, bool]:
         row = self.db.execute(

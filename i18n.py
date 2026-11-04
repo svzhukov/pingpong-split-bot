@@ -120,6 +120,14 @@ STRINGS = {
     },
     "txt_replaced": {"ru": "⚠️ Сессия заменена", "en": "⚠️ Session replaced"},
     "btn_close_session": {"ru": "🗑 Закрыть сессию", "en": "🗑 Close session"},
+    "btn_copy_session": {"ru": "📋 Копировать сессию", "en": "📋 Copy session"},
+    "title_copy": {"ru": "📋 Копия сессии", "en": "📋 Session copy"},
+    "txt_copy_send": {"ru": "Отправьте эту команду в другом чате — там откроется такая же "
+                            "сессия, какой она была сейчас:",
+                      "en": "Send this command in another chat to open the same session "
+                            "there, as it is right now:"},
+    "txt_copy_tap": {"ru": "Нажмите на команду, чтобы скопировать.",
+                     "en": "Tap the command to copy it."},
     "btn_close_yes": {"ru": "🗑 Да, закрыть", "en": "🗑 Yes, close"},
     "title_close": {"ru": "🗑 Закрыть сессию?", "en": "🗑 Close the session?"},
     "txt_close_confirm": {
@@ -182,7 +190,9 @@ STRINGS = {
             "/split — открывает пустую сессию с шаблоном таблицы: скопируйте таблицу, "
             "впишите строки, пришлите ответом, пример на скриншоте выше\n"
             "/split &lt;ссылка на Google Sheets&gt; — возьмёт таблицу оттуда, также можно "
-            "просто скопировать и вставить любую таблицу напрямую текстом\n\n"
+            "просто скопировать и вставить любую таблицу напрямую текстом\n"
+            "/split &lt;код&gt; — открыть копию сессии из другого чата: код даёт "
+            "⚙️ Настройки → 📋 Копировать сессию\n\n"
             "/add @маша 20-22 35 — добавить игрока в открытую сессию\n"
             "/edit @маша 20:30-22 — поправить того, кто уже в списке; без имени — "
             "себя, если ваш @ник есть в списке\n"
@@ -222,7 +232,9 @@ STRINGS = {
             "/split — opens an empty session with a table template: copy the table, "
             "fill in the rows, send it back as a reply, see the example in the screenshot above\n"
             "/split &lt;Google Sheets link&gt; — reads the table from there; you can also "
-            "just copy and paste any table straight in as text\n\n"
+            "just copy and paste any table straight in as text\n"
+            "/split &lt;code&gt; — open a copy of a session from another chat: the code "
+            "comes from ⚙️ Settings → 📋 Copy session\n\n"
             "/add @masha 20-22 35 — add a player to an open session\n"
             "/edit @masha 20:30-22 — fix someone already on the list; without a name — "
             "yourself, if your @username is on it\n"

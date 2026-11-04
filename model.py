@@ -1,6 +1,7 @@
 import itertools
 import math
 import re
+import secrets
 import uuid
 from dataclasses import dataclass, field, asdict
 from typing import List, Optional, Dict, Any
@@ -16,6 +17,15 @@ NAME_LIMIT = 64
 
 def new_id() -> str:
     return uuid.uuid4().hex[:6]
+
+
+# no 0/o, 1/l/i — a code read off a screen and retyped can't be misread
+COPY_ALPHABET = "abcdefghjkmnpqrstuvwxyz23456789"
+COPY_LENGTH = 10
+
+
+def new_copy_code() -> str:
+    return "".join(secrets.choice(COPY_ALPHABET) for _ in range(COPY_LENGTH))
 
 
 def fmt_time(minutes: int) -> str:
