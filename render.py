@@ -350,8 +350,8 @@ def screen_time(s: Session, r: Result):
     ]
     if len(p.spans) > 1:
         keyboard.append([(t(s.lang, "btn_span_del"), "span:del:{}:{}".format(p.id, index))])
-    keyboard.append([(t(s.lang, "btn_span_add"), "span:add:" + p.id),
-                     (t(s.lang, "btn_clear"), "span:clear:" + p.id)])
+    keyboard.append([(t(s.lang, "btn_span_add"), "span:add:" + p.id)])
+    keyboard.append([(t(s.lang, "btn_clear"), "span:clear:" + p.id)])
     keyboard.append([(t(s.lang, "btn_back"), "nav:player:" + p.id)])
 
     label = t(s.lang, "title_time", name=bidi_safe(p.handle or p.name),

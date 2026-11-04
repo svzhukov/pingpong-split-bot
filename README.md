@@ -212,7 +212,8 @@ has a time), ready to nudge; opening 💰 Взнос for someone on `-` sets it 
 On 💰 Взнос, rows of −1 / ＋1, −5 / ＋5 and −10 / ＋10 nudge the amount — never
 below 0, and a payment tied to a window (`12.5 21:30-22:15`) keeps its window.
 Like 🕐 Время's 5, 15 and 60 мин rows (start on the left, end on the right),
-they sit between the ✏ buttons and Очистить, the last row above ‹ Назад.
+they sit between the ✏ buttons and Очистить, which on both screens is a row of
+its own, the last one above ‹ Назад.
 
 A player with no time yet counts toward nothing — they stay out of the split
 and the ИТОГО block until their time is in.
