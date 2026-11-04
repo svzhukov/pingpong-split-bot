@@ -62,7 +62,7 @@ class Store:
         self.db.commit()
 
     def save_copy(self, code: str, session: Session) -> None:
-        self.db.execute("INSERT INTO copies (code, payload) VALUES (?, ?)",
+        self.db.execute("INSERT OR IGNORE INTO copies (code, payload) VALUES (?, ?)",
                         (code, json.dumps(session.to_dict(), ensure_ascii=False)))
         self.db.commit()
 

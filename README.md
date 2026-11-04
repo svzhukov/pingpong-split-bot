@@ -241,8 +241,10 @@ rounding, while the language and table style stay that chat's own. It replaces
 whatever session the chat has like any other `/split`, asking first when that
 one has players.
 
-Every tap makes a new code, so edits made after copying never reach it — tap
-again for a fresh one. Codes are 10 characters with no 0/o or 1/l/i, matched
+The code is worked out from what the copy carries, so tapping again with nothing
+changed gives the same code, and any change to those fields gives a new one — a
+code already handed out keeps meaning exactly what it meant. Moving around the
+panel isn't a change. Codes are 10 characters with no 0/o or 1/l/i, matched
 case-insensitively, and never expire.
 
 ## What gets remembered

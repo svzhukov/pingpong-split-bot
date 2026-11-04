@@ -1,7 +1,8 @@
+import hashlib
 import itertools
+import json
 import math
 import re
-import secrets
 import uuid
 from dataclasses import dataclass, field, asdict
 from typing import List, Optional, Dict, Any
@@ -22,10 +23,29 @@ def new_id() -> str:
 # no 0/o, 1/l/i — a code read off a screen and retyped can't be misread
 COPY_ALPHABET = "abcdefghjkmnpqrstuvwxyz23456789"
 COPY_LENGTH = 10
+# what a copy carries: everything that decides the numbers, nothing about the
+# chat it was made in
+COPIED_FIELDS = ("date", "rate", "currency", "rounding", "players", "payments", "debts")
 
 
-def new_copy_code() -> str:
-    return "".join(secrets.choice(COPY_ALPHABET) for _ in range(COPY_LENGTH))
+def copy_code(session: "Session") -> str:
+    """Worked out from what the copy carries, so an unchanged session hands out
+    the same code however often it's copied, and a changed one a new code."""
+    raw = session.to_dict()
+    content = {name: raw[name] for name in COPIED_FIELDS}
+    # money typed in again gets a fresh random id, lands at the end of its list
+    # and may come back as 30.0 where it was 30 — none of which is a change
+    for name in ("payments", "debts"):
+        content[name] = sorted(
+            (dict(item, id=None, amount=float(item["amount"])) for item in content[name]),
+            key=lambda item: json.dumps(item, sort_keys=True, ensure_ascii=False))
+    text = json.dumps(content, sort_keys=True, ensure_ascii=False)
+    number = int.from_bytes(hashlib.sha256(text.encode("utf-8")).digest(), "big")
+    code = ""
+    for _ in range(COPY_LENGTH):
+        number, index = divmod(number, len(COPY_ALPHABET))
+        code += COPY_ALPHABET[index]
+    return code
 
 
 def fmt_time(minutes: int) -> str:

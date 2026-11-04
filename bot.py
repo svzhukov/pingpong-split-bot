@@ -21,7 +21,7 @@ from model import (BLANK, CURRENCY_RE, DAY, DEFAULT_LENGTH, NAME_LIMIT, SYMBOL_B
                    Session, clamp_span,
                    compute, extract_span, fmt_money, parse_paid, parse_roster,
                    parse_amount_note, parse_table, sheet_export_url,
-                   new_copy_code, new_id, parse_entry, parse_time)
+                   COPIED_FIELDS, copy_code, new_id, parse_entry, parse_time)
 from render import (Keyboard, plain_title, players_label, posted_title, render, summary,
                     table_csv)
 from store import Store
@@ -228,9 +228,8 @@ def copied_session(chat_id: int, source: Session) -> Session:
     """Everything that decides the numbers comes from the copy; how the chat
     reads it — language, table style — stays this chat's own."""
     session = blank_session(chat_id)
-    session.date, session.rate, session.currency, session.rounding = \
-        source.date, source.rate, source.currency, source.rounding
-    session.players, session.payments, session.debts = source.players, source.payments, source.debts
+    for name in COPIED_FIELDS:
+        setattr(session, name, getattr(source, name))
     return session
 
 
@@ -631,7 +630,7 @@ def apply_tap(s: Session, data: str) -> Optional[str]:
         return None
 
     if head == "copy":
-        code = new_copy_code()
+        code = copy_code(s)
         store.save_copy(code, s)
         s.screen, s.focus = "copy", {"code": code}
         return None
