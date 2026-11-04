@@ -134,16 +134,19 @@ There are two, and they're the same command.
 | `/split <Google Sheets link>` | Reads the table from the sheet |
 | `/split <code>` | Opens a copy of a session from another chat — see Copying a session |
 
-`/start` and `/help` print the FAQ. Everything else is buttons.
+`/start` and `/help` print the guide, «Как это работает». Everything else is
+buttons. On the main screen, ＋ Игрок is the row right under the player list, and
+❓ Как это работает sits left of ⚙️ Настройки on the row below it; its ‹ Назад
+returns to the main screen.
 
-The FAQ — both the `/help` reply and the panel's FAQ screen — opens with a
-three-step guide image (`/split` → copy the table → reply with the rows) shown as
-a large link preview above the text (a photo caption caps at 1024 characters; the
-FAQ is longer). The image is `assets/faq-guide.png`,
+The guide — both the `/help` reply and the panel's ❓ Как это работает screen —
+opens with a three-step image (`/split` → copy the table → reply with the rows)
+shown as a large link preview above the text (a photo caption caps at 1024
+characters; the guide is longer). The image is `assets/faq-guide.png`,
 served from a public gist at a revision-pinned URL (`FAQ_IMAGE_URL` in `bot.py`).
 Telegram caches previews per URL, so to change the picture push a new revision to
 the gist and point `FAQ_IMAGE_URL` at it. Every other panel screen sends with
-previews disabled, so the image disappears when you leave the FAQ.
+previews disabled, so the image disappears when you leave the guide.
 
 ## What the bot reads from the chat
 

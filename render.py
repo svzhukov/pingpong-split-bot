@@ -281,7 +281,8 @@ def screen_home(s: Session, r: Result):
 
     keyboard = player_rows([("👤 " + (row.handle or row.name), "nav:player:" + row.id)
                             for row in ordered_rows(r)])
-    keyboard.append([(t(s.lang, "btn_add_player"), "ask:newplayer"),
+    keyboard.append([(t(s.lang, "btn_add_player"), "ask:newplayer")])
+    keyboard.append([(t(s.lang, "btn_help"), "nav:help"),
                      (t(s.lang, "btn_settings"), "nav:settings")])
 
     waiting = "_waiting" if s.incomplete() else ""
@@ -456,7 +457,6 @@ def screen_settings(s: Session, r: Result):
 
     rate_step = money_step(s.currency, 1)
     keyboard = [
-        [(t(s.lang, "btn_help"), "nav:help")],
         [(t(s.lang, "btn_lang_ru") + (check if s.lang == "ru" else ""), "set:lang:ru"),
          (t(s.lang, "btn_currency"), "nav:currency"),
          (t(s.lang, "btn_lang_en") + (check if s.lang == "en" else ""), "set:lang:en")],
@@ -503,7 +503,7 @@ def screen_close(s: Session, r: Result):
 def screen_help(s: Session, r: Result):
     body = t(s.lang, "help").split("\n\n", 1)[1]
     return t(s.lang, "title_help"), body, \
-        [[(t(s.lang, "btn_back"), "nav:settings")]]
+        [[(t(s.lang, "btn_back"), "nav:home")]]
 
 
 def screen_currency(s: Session, r: Result):
