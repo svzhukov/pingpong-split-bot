@@ -26,7 +26,8 @@ actually put in, and it is spread like this:
 
 So someone who stays on alone pays one table's price for that time, not the
 evening's average, which includes the tables the whole group took. The session
-title drops its `· N ₾/час` part once money is in (Settings still shows it).
+title always ends with that price, `· 16 ₾/час`, since it counts both before and
+after money is in.
 
 Interface is Russian by default, English available in Settings.
 

@@ -206,8 +206,7 @@ def session_title(s: Session, r: Result) -> str:
     if r.slices:
         parts.append(fmt_dur(r.minutes, s.lang))
         parts.append(money(s, r.total_cost))
-    if r.estimated:
-        parts.append(t(s.lang, "txt_rate_line", rate=s.rate, cur=s.currency))
+    parts.append(t(s.lang, "txt_rate_line", rate=s.rate, cur=s.currency))
     return " · ".join(parts)
 
 
