@@ -311,7 +311,22 @@ def parse_cells(cells):
     return None
 
 
-def parse_table(text: str):
+HANDLE_RE = re.compile(r"@[A-Za-z][A-Za-z0-9_]*")
+
+
+def handles_only(line: str) -> List[str]:
+    """A line of nothing but @handles, commas allowed: players listed one per
+    line under the rows that do have a time. A plain name is never read this
+    way, since a table's header row looks just like one."""
+    words = [w.strip(TOKEN_PUNCT) for w in re.split(r"[\s,;]+", line)]
+    words = [w for w in words if w]
+    return words if words and all(HANDLE_RE.fullmatch(w) for w in words) else []
+
+
+def parse_table(text: str, bare_handles: bool = False):
+    """With bare_handles, a line of only @handles adds them with nothing filled
+    in — for /split and /add, never /edit, where naming someone with nothing
+    beside them must not wipe their time."""
     rows = []
     for raw in text.splitlines():
         line = CURRENCY_RE.sub("", raw.replace("\u00a0", " ")).rstrip()
@@ -337,6 +352,8 @@ def parse_table(text: str):
                 parsed = parse_cells([blank.group(1), "-"] + (blank.group(2) or "").split())
                 if parsed:
                     rows.append(parsed)
+            elif bare_handles:
+                rows.extend((handle, None, None, None) for handle in handles_only(line))
             continue
         frm, to = parse_time(m.group(2)), parse_time(m.group(3))
         if frm is None or to is None:

@@ -351,7 +351,7 @@ async def start_session(chat_id: int, user, args: str, reply) -> None:
             return await reply.answer(t(lang_of(chat_id), "txt_sheet_empty"))
         session = session_from_table(chat_id, rows)
     else:
-        rows = parse_table(args or "")
+        rows = parse_table(args or "", bare_handles=True)
         if rows and looks_like_table(args):
             session = session_from_table(chat_id, rows)
         else:
@@ -456,7 +456,7 @@ async def handle_add(message: Message, command: CommandObject):
         return await push(session.chat_id)
 
     if looks_like_table(command.args):
-        added = apply_rows(session, parse_table(command.args), only_new=True)
+        added = apply_rows(session, parse_table(command.args, bare_handles=True), only_new=True)
     else:
         added = add_roster(session, roster_from(command.args))
 

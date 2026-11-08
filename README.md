@@ -217,7 +217,10 @@ Overlapping windows for one person are not double-billed.
 
 Paid left out next to a time is 0 — nobody types the obvious, so
 `/edit 21:20-00:00` means paid nothing. Left out with no time either, both are
-`-` (`/split @misha @pasha`). A `-` keeps a value for the player to fill in:
+`-` (`/split @misha @pasha`). Over several lines, `/split` and `/add` read
+a line of nothing but @handles (`@pasha,` under `@misha 22-00 75`) the same way;
+a plain name alone on a line is skipped, since a table's header row looks just
+like one, and `/edit` skips both. A `-` keeps a value for the player to fill in:
 `@misha - 35`, `@misha 20-22 -`, a table row `Misha  -  -`. That is also how
 ⬇️ Скачать таблицу writes an unfilled amount, so a downloaded table pastes back
 unchanged. A command naming only someone's time leaves an amount they already
