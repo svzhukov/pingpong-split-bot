@@ -324,9 +324,9 @@ def handles_only(line: str) -> List[str]:
 
 
 def parse_table(text: str, bare_handles: bool = False):
-    """With bare_handles, a line of only @handles adds them with nothing filled
-    in — for /split and /add, never /edit, where naming someone with nothing
-    beside them must not wipe their time."""
+    """With bare_handles, a line of only @handles names those players with
+    nothing filled in. The commands ask for it; a reply to the panel doesn't,
+    since "@маша @паша" there is a reply to a prompt, not a table."""
     rows = []
     for raw in text.splitlines():
         line = CURRENCY_RE.sub("", raw.replace("\u00a0", " ")).rstrip()

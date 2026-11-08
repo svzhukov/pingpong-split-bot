@@ -147,7 +147,7 @@ from @BotFather.
 
 ## Commands
 
-There are two, and they're the same command.
+`/split` starts a session and `/edit` changes it.
 
 | Command | What it does |
 | --- | --- |
@@ -156,11 +156,22 @@ There are two, and they're the same command.
 | `/split @misha 19-21 @pasha 20-22` | …with a time each — a time belongs only to the name before it |
 | `/split <Google Sheets link>` | Reads the table from the sheet |
 | `/split <code>` | Opens a copy of a session from another chat — see Copying a session |
+| `/edit @masha 20-22 35` | Adds Masha, or fixes her row if she's already in — same name, time, money; several names, or one per line, work too |
+| `/edit 20-22 35` | Fixes the sender's own row, found by their @username |
 
 `/start` and `/help` print the guide, «Как это работает». Everything else is
 buttons. On the main screen, ＋ Игрок is the row right under the player list, and
 ❓ Как это работает sits left of ⚙️ Настройки on the row below it; its ‹ Назад
 returns to the main screen.
+
+`/add` still works for groups used to it, but the guide no longer lists it:
+it takes the same input as `/edit` and only ever adds, leaving anyone already
+in the session alone.
+
+⚙️ Настройки → ⬇️ Панель вниз, between 📋 Копировать сессию and
+🗑 Закрыть сессию, brings the panel back down when the chat has buried it: the
+old message is deleted and a fresh one opens on the main screen. In a group the
+bot only reads replies to its panel, so a panel nobody can reach is unusable.
 
 The guide — both the `/help` reply and the panel's ❓ Как это работает screen —
 opens with a three-step image (`/split` → copy the table → reply with the rows)
@@ -184,7 +195,7 @@ only to that person:
 
 A time is always a start and an end joined by a dash: `21-23`, `21:30 - 22:30`.
 A bare number after a name is what they paid — `@misha 45`, `@misha 20-22 45`.
-The order is name, time, money everywhere — `/split`, `/add`, `/edit`, ＋ Игрок
+The order is name, time, money everywhere — `/split`, `/edit`, ＋ Игрок
 and pasted tables alike. A number typed ahead of the time is ignored
 (`@misha 45 20-22` keeps the time and drops the 45, so paid is 0), and a number is never
 part of a name. Punctuation after a time or an amount is fine — `@misha 20-22 45, @pasha`.
@@ -217,10 +228,11 @@ Overlapping windows for one person are not double-billed.
 
 Paid left out next to a time is 0 — nobody types the obvious, so
 `/edit 21:20-00:00` means paid nothing. Left out with no time either, both are
-`-` (`/split @misha @pasha`). Over several lines, `/split` and `/add` read
+`-` (`/split @misha @pasha`). Over several lines, `/split` and `/edit` read
 a line of nothing but @handles (`@pasha,` under `@misha 22-00 75`) the same way;
 a plain name alone on a line is skipped, since a table's header row looks just
-like one, and `/edit` skips both. A `-` keeps a value for the player to fill in:
+like one. `/edit` naming someone already in the session with nothing beside them
+leaves them as they are. A `-` keeps a value for the player to fill in:
 `@misha - 35`, `@misha 20-22 -`, a table row `Misha  -  -`. That is also how
 ⬇️ Скачать таблицу writes an unfilled amount, so a downloaded table pastes back
 unchanged. A command naming only someone's time leaves an amount they already
@@ -261,7 +273,7 @@ across everyone else.
 
 ## Closing without settling
 
-⚙️ Настройки → 🗑 Закрыть сессию (the last row, above ‹ Назад, right of 📋 Копировать сессию) asks once — it
+⚙️ Настройки → 🗑 Закрыть сессию (the last row, above ‹ Назад, right of ⬇️ Панель вниз) asks once — it
 names how many players and how much money are in the session — and on 🗑 Да,
 закрыть deletes the session outright. No settle-up is posted; the panel is left
 as one line, `🗑 Сессия 03.11.26 закрыта @misha без расчёта`, with no buttons,

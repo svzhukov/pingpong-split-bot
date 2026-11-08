@@ -128,6 +128,7 @@ STRINGS = {
     "txt_replaced": {"ru": "⚠️ Сессия заменена", "en": "⚠️ Session replaced"},
     "btn_close_session": {"ru": "🗑 Закрыть сессию", "en": "🗑 Close session"},
     "btn_copy_session": {"ru": "📋 Копировать сессию", "en": "📋 Copy session"},
+    "btn_repost": {"ru": "⬇️ Панель вниз", "en": "⬇️ Panel down"},
     "title_copy": {"ru": "📋 Копия сессии", "en": "📋 Session copy"},
     "txt_copy_send": {"ru": "Отправьте эту команду в другом чате — там откроется такая же "
                             "сессия, какой она была сейчас:",
@@ -198,10 +199,8 @@ STRINGS = {
             "<b>Команды</b>\n"
             "<code>/split</code> — новая сессия; можно сразу с именами или взносом: "
             "<code>/split @миша, @маша, @паша 50</code>\n"
-            "<code>/add @маша 20:00-22:00 50</code> — добавить игрока\n"
-            "<code>/edit 20:00-22:00 50</code> — поправить свою строку, если вы уже "
-            "в таблице под своим ником; чужую — <code>/edit @маша 20:00-22:00 50</code>\n"
-            "<code>/panel</code> — вернуть панель вниз, если она утонула в чате\n\n"
+            "<code>/edit @маша 20:00-22:00 50</code> — добавить игрока или поправить его строку; "
+            "свою — <code>/edit 20:00-22:00 50</code>, если вы уже в таблице под своим ником\n\n"
             "❗️ В группе <b>бот видит только ответы на свою панель</b> — присылайте всё "
             "ответом на неё.\n\n"
             "<b>Как считается:</b> время делят поровну все, кто играл в этот момент. "
@@ -215,10 +214,8 @@ STRINGS = {
             "<b>Commands</b>\n"
             "<code>/split</code> — new session; you can start with names or a payment: "
             "<code>/split @misha, @masha, @pasha 50</code>\n"
-            "<code>/add @masha 20:00-22:00 50</code> — add a player\n"
-            "<code>/edit 20:00-22:00 50</code> — fix your own row, if you're already "
-            "in the table under your username; someone else's — <code>/edit @masha 20:00-22:00 50</code>\n"
-            "<code>/panel</code> — bring the panel back down if chat buried it\n\n"
+            "<code>/edit @masha 20:00-22:00 50</code> — add a player or fix their row; "
+            "your own — <code>/edit 20:00-22:00 50</code>, if you're already in the table under your username\n\n"
             "❗️ In a group <b>the bot only sees replies to its own panel</b> — send everything "
             "as a reply to it.\n\n"
             "<b>How it's counted:</b> everyone playing at a given moment shares that time "

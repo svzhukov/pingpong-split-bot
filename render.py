@@ -476,6 +476,7 @@ def screen_settings(s: Session, r: Result):
          ("✏ {}".format(t(s.lang, "txt_min_button", money=money(s, minimum))), "ask:mintransfer"),
          (nudge_label(unit, s.currency), "set:min:{}".format(unit))],
         [(t(s.lang, "btn_copy_session"), "copy"),
+         (t(s.lang, "btn_repost"), "repost"),
          (t(s.lang, "btn_close_session"), "nav:close")],
         [(t(s.lang, "btn_back"), "nav:home")],
     ]

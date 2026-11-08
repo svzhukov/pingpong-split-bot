@@ -167,11 +167,12 @@ def looks_like_table(args: str) -> bool:
 
 
 def apply_rows(session: Session, rows, only_new: bool = False,
-               only_existing: bool = False) -> int:
+               editing: bool = False) -> int:
     """A name repeated across rows is the same person with another window;
     a row with no name at all continues the row above it. With only_new, names
     already in the session are left untouched — /add never edits; with
-    only_existing, unknown names are skipped — /edit never adds."""
+    editing, a row naming someone already in the session with nothing beside
+    it leaves them alone, as /edit typed on one line does."""
     touched, last, stated = set(), None, {}
 
     for name, frm, to, paid in rows:
@@ -180,7 +181,7 @@ def apply_rows(session: Session, rows, only_new: bool = False,
         if name and only_new and player is not None and player.id not in touched:
             last = None
             continue
-        if name and only_existing and player is None:
+        if name and editing and player is not None and frm is None and paid is None:
             last = None
             continue
         if player is None and not name:
@@ -258,13 +259,14 @@ def add_roster(session: Session, roster) -> int:
 
 
 def edit_roster(session: Session, roster) -> int:
-    """The mirror of add_roster: only names already in the session, and editing
-    never creates. A stated span replaces their time."""
+    """A name not in the session yet is added, as add_roster would; for anyone
+    already in it a stated span replaces their time."""
     changed = 0
 
     for name, handle, frm, to, paid in roster:
         player = session.find_by_name(name)
         if not player:
+            changed += add_roster(session, [(name, handle, frm, to, paid)])
             continue
 
         if frm is None and paid is None:
@@ -388,12 +390,6 @@ async def handle_split(message: Message, command: CommandObject):
     await start_session(message.chat.id, message.from_user, command.args, message)
 
 
-@dp.message(Command("panel"))
-async def on_panel(message: Message):
-    async with chat_lock(message.chat.id):
-        await handle_panel(message)
-
-
 async def repost_panel(session: Session) -> None:
     """Move the panel to the bottom of the chat: drop the old message and send
     a fresh one, so there is still exactly one panel."""
@@ -405,14 +401,6 @@ async def repost_panel(session: Session) -> None:
 
     await draw(session, force_new=True)
     store.save(session)
-
-
-async def handle_panel(message: Message) -> None:
-    """Bring the panel back down when chat has buried it. In a group input is
-    reply-only, so an unreachable panel is an unusable bot."""
-    session = store.load(message.chat.id)
-    if session:
-        await repost_panel(session)
 
 
 @dp.message(Command("edit"))
@@ -427,7 +415,7 @@ async def handle_edit(message: Message, command: CommandObject):
         return
 
     if looks_like_table(command.args):
-        changed = apply_rows(session, parse_table(command.args), only_existing=True)
+        changed = apply_rows(session, parse_table(command.args, bare_handles=True), editing=True)
     else:
         changed = edit_roster(session, own_roster(session, message.from_user, command.args))
 
@@ -530,6 +518,13 @@ async def handle_tap(query: CallbackQuery):
         store.delete(chat_id)
         return await replace_panel(session, t(session.lang, "txt_dropped", date=session.date,
                                               name=handle_of(query.from_user)))
+
+    if data == "repost":
+        # bring the panel back down when chat has buried it: in a group input
+        # is reply-only, so an unreachable panel is an unusable bot
+        await query.answer()
+        session.screen = "home"
+        return await repost_panel(session)
 
     if data == "export":
         await query.answer()
@@ -880,7 +875,7 @@ def handle_awaited(s: Session, text: str) -> bool:
         if entry:
             return is_name(entry[0]) and bool(add_roster(s, [entry]))
 
-        # same grammar as /add, so "@маша 20:30" means the same typed or commanded
+        # same grammar as /edit, so "@маша 20:30" means the same typed or commanded
         roster = roster_from(text)
         if not any(is_name(name) for name, _, _, _, _ in roster):
             return False
