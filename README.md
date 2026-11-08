@@ -193,7 +193,8 @@ only to that person:
 | new player | ＋ Игрок | a name, or `Имя 19-21 35` | on success, or after 3 minutes |
 | time / contribution / name / debt / rate | their own buttons | the value asked for | on success, or after 3 minutes |
 
-A time is always a start and an end joined by a dash: `21-23`, `21:30 - 22:30`.
+A time is always a start and an end joined by a dash: `21-23`, `21:30 - 22:30`,
+`21.30-22.30`.
 A bare number after a name is what they paid — `@misha 45`, `@misha 20-22 45`.
 The order is name, time, money everywhere — `/split`, `/edit`, ＋ Игрок
 and pasted tables alike. A number typed ahead of the time is ignored
