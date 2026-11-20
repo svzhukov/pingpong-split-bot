@@ -442,7 +442,7 @@ def screen_debt(s: Session, r: Result):
 def screen_settings(s: Session, r: Result):
     check = " ✓"
     minimum = transfer_minimum(s)
-    text = "{}\n{}\n\n{}\n{}\n\n{}\n{}\n\n{}\n{}\n{}\n\n{}\n{}\n{}".format(
+    text = "{}\n{}\n\n{}\n{}\n\n{}\n{}\n\n{}\n{}\n\n{}\n{}\n{}\n\n{}\n{}\n{}".format(
         bold(t(s.lang, "lbl_language")),
         "🇷🇺 Русский" if s.lang == "ru" else "🇬🇧 English",
         bold(t(s.lang, "lbl_style")),
@@ -451,6 +451,8 @@ def screen_settings(s: Session, r: Result):
         bold(t(s.lang, "lbl_rounding")),
         "{} — {}".format(t(s.lang, "btn_round_" + rounding_key(s)),
                          t(s.lang, "txt_round_" + rounding_key(s))),
+        bold(t(s.lang, "lbl_date")),
+        bold(s.date),
         bold(t(s.lang, "lbl_rate")),
         bold(t(s.lang, "txt_rate_line", rate=s.rate, cur=s.currency)),
         t(s.lang, "txt_tap_price"),
@@ -469,6 +471,9 @@ def screen_settings(s: Session, r: Result):
         [(("◉ " if rounding_key(s) == key else "○ ") + t(s.lang, "btn_round_" + key),
           "set:round:{:g}".format(step))
          for step, key in zip(ROUNDING_STEPS, ROUNDING_KEYS)],
+        [(t(s.lang, "btn_day_back"), "set:date:-1"),
+         ("✏ {}".format(s.date), "ask:date"),
+         (t(s.lang, "btn_day_forward"), "set:date:1")],
         [(nudge_label(-unit, s.currency), "set:rate:{}".format(-unit)),
          ("✏ {}".format(t(s.lang, "txt_rate_button", rate=s.rate, cur=s.currency)), "ask:rate"),
          (nudge_label(unit, s.currency), "set:rate:{}".format(unit))],

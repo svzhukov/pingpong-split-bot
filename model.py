@@ -4,6 +4,7 @@ import json
 import math
 import re
 import uuid
+from datetime import datetime, timedelta
 from dataclasses import dataclass, field, asdict
 from typing import List, Optional, Dict, Any
 
@@ -174,6 +175,32 @@ def parse_time(text: str) -> Optional[int]:
     if hours > 23 or mins > 59:
         return None
     return hours * 60 + mins
+
+
+DATE_FORMAT = "%d.%m.%y"
+DATE_INPUT_FORMATS = ("%d.%m.%Y", "%d.%m.%y")
+
+
+def today() -> str:
+    return datetime.now().strftime(DATE_FORMAT)
+
+
+def shift_date(text: str, days: int) -> str:
+    try:
+        day = datetime.strptime(text, DATE_FORMAT)
+    except ValueError:
+        day = datetime.now()
+    return (day + timedelta(days=days)).strftime(DATE_FORMAT)
+
+
+def parse_date(text: str) -> Optional[str]:
+    cleaned = re.sub(r"[/,\-]", ".", (text or "").strip())
+    for pattern in DATE_INPUT_FORMATS:
+        try:
+            return datetime.strptime(cleaned, pattern).strftime(DATE_FORMAT)
+        except ValueError:
+            pass
+    return None
 
 
 AMOUNT_NOTE_RE = re.compile(r"^\s*(\d+(?:[.,]\d+)?)(?:\s+(.*))?\s*$", re.S)

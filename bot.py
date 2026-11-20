@@ -21,7 +21,8 @@ from model import (BLANK, CURRENCY_RE, DAY, DEFAULT_LENGTH, NAME_LIMIT, SYMBOL_B
                    Session, clamp_span,
                    compute, extract_span, fmt_money, parse_paid, parse_roster,
                    parse_amount_note, parse_table, sheet_export_url,
-                   COPIED_FIELDS, copy_code, new_id, parse_entry, parse_time, transfer_minimum)
+                   COPIED_FIELDS, copy_code, new_id, parse_date, parse_entry, parse_time, shift_date,
+                   today, transfer_minimum)
 from render import (Keyboard, plain_title, players_label, posted_title, render, summary,
                     table_csv)
 from store import Store
@@ -155,7 +156,7 @@ def handle_of(user) -> str:
 
 def blank_session(chat_id: int) -> Session:
     rate, currency, lang, rounding, blocks, min_transfer = store.settings(chat_id)
-    return Session(chat_id=chat_id, date=datetime.now().strftime("%d.%m.%y"),
+    return Session(chat_id=chat_id, date=today(),
                    rate=rate, currency=currency, lang=lang, rounding=rounding, blocks=blocks,
                    min_transfer=min_transfer)
 
@@ -597,6 +598,7 @@ def apply_tap(s: Session, data: str) -> Optional[str]:
             "time": "txt_send_time",
             "amount": "txt_send_amount",
             "rate": "txt_send_rate",
+            "date": "txt_send_date",
             "mintransfer": "txt_send_amount",
             "rename": "txt_send_rename",
         }[parts[1]])
@@ -719,6 +721,11 @@ def tap_span(s: Session, parts):
 
 def tap_settings(s: Session, parts):
     key, value = parts[1], parts[2]
+
+    if key == "date":
+        # the date belongs to this session, not the group, so nothing to remember
+        s.date = shift_date(s.date, int(value))
+        return None
 
     if key == "rate":
         s.rate = max(0, s.rate + int(value))
@@ -938,6 +945,13 @@ def handle_awaited(s: Session, text: str) -> bool:
             return False
         s.rate = int(amount)
         store.remember_settings(s)
+        return True
+
+    if s.awaiting == "date":
+        day = parse_date(text)
+        if day is None:
+            return False
+        s.date = day
         return True
 
     if s.awaiting == "mintransfer":

@@ -173,6 +173,12 @@ in the session alone.
 old message is deleted and a fresh one opens on the main screen. In a group the
 bot only reads replies to its panel, so a panel nobody can reach is unusable.
 
+⚙️ Настройки → Дата сессии is the date in the session title, the settle-up and
+the downloaded file's name. A new session takes the day it was opened; the row
+above the price reads −1 день · ✏ 20.11.26 · ＋1 день, and ✏ takes a reply like
+`20.11.2026` (`20.11.26` works too). It belongs to that session alone — the next
+`/split` starts on its own day again.
+
 The guide — both the `/help` reply and the panel's ❓ Как это работает screen —
 opens with a three-step image (`/split` → copy the table → reply with the rows)
 shown as a large link preview above the text, so the guide isn't held to a
