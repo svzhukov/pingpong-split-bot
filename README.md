@@ -343,9 +343,9 @@ same amount; the residue that leaves over lands on the largest balance, so the
 transfers always cancel exactly. ⬇️ Скачать таблицу keeps paid as typed, so the
 file pastes back unchanged.
 
-Transfers are planned to avoid crumbs first: a debt is never split into
+Transfers are planned to avoid crumbs first: an amount to pay is never split into
 transfers below the **minimum transfer** in Settings, even at the cost of one more
-transfer, while a debt or a due that is itself below it still goes in one. The
+transfer, while an amount to pay or to receive that is itself below it still goes in one. The
 minimum defaults to three of the smallest money step — 3 ₾, 30 ₽, 300 ֏
 (`MIN_TRANSFER_STEPS`) — can be nudged or typed in, and goes back to that default
 when the currency changes. After that, the fewest payments, and among plans with
