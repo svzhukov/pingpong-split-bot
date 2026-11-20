@@ -96,7 +96,7 @@ def columns_table(headers, body) -> str:
         for r in rows)
 
 
-ROUNDING_KEYS = ("tenth", "half", "whole")
+ROUNDING_KEYS = ("exact", "tenth", "half", "whole")
 
 
 def rounding_key(s: Session) -> str:

@@ -81,7 +81,7 @@ class Store:
         if not row:
             return DEFAULT_RATE, DEFAULT_CURRENCY, "ru", DEFAULT_ROUNDING, False, None
         return (row["rate"], row["currency"], row["lang"],
-                float(row["rounding"]) or DEFAULT_ROUNDING, bool(row["blocks"]), row["min_transfer"])
+                float(row["rounding"]), bool(row["blocks"]), row["min_transfer"])
 
     def remember_settings(self, s: Session) -> None:
         self.db.execute(

@@ -693,8 +693,7 @@ class Session:
             rate=raw.get("rate", DEFAULT_RATE),
             currency=raw.get("currency", DEFAULT_CURRENCY),
             lang=raw.get("lang", "ru"),
-            # 0 was the old exact setting, which showed one decimal anyway
-            rounding=float(raw.get("rounding", 1) or 0.1),
+            rounding=float(raw.get("rounding", 1) or 0),
             blocks=raw.get("blocks", False),
             min_transfer=raw.get("min_transfer"),
             settled_at=raw.get("settled_at"),
@@ -716,7 +715,7 @@ class Session:
         return session
 
 
-ROUNDING_STEPS = (0.1, 0.5, 1.0)
+ROUNDING_STEPS = (0.0, 0.1, 0.5, 1.0)
 DEFAULT_ROUNDING = 0.1
 
 
