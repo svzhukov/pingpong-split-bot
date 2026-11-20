@@ -440,27 +440,29 @@ def screen_debt(s: Session, r: Result):
     return player_title(s, p), player_body(s, label, hint), keyboard
 
 
+def setting_line(label: str, value: str, note: str = "") -> str:
+    line = bold(value) + (" — " + note if note else "")
+    return "{}\n{}".format(bold(label), line)
+
+
 def screen_settings(s: Session, r: Result):
     check = " ✓"
     minimum = transfer_minimum(s)
-    text = "{}\n{}\n\n{}\n{}\n\n{}\n{}\n\n{}\n{}\n\n{}\n{}\n{}\n\n{}\n{}\n{}".format(
-        bold(t(s.lang, "lbl_language")),
-        "🇷🇺 Русский" if s.lang == "ru" else "🇬🇧 English",
-        bold(t(s.lang, "lbl_style")),
-        "{} — {}".format(t(s.lang, "btn_style_block" if s.blocks else "btn_style_plain"),
-                         t(s.lang, "txt_style_block" if s.blocks else "txt_style_plain")),
-        bold(t(s.lang, "lbl_rounding")),
-        "{} — {}".format(t(s.lang, "btn_round_" + rounding_key(s)),
-                         t(s.lang, "txt_round_" + rounding_key(s))),
-        bold(t(s.lang, "lbl_date")),
-        bold(s.date),
-        bold(t(s.lang, "lbl_rate")),
-        bold(t(s.lang, "txt_rate_line", rate=s.rate, cur=s.currency)),
-        t(s.lang, "txt_tap_price"),
-        bold(t(s.lang, "lbl_min_transfer")),
-        bold(money(s, minimum)),
-        t(s.lang, "txt_min_transfer"),
-    )
+    code = next((c for c, sym in CURRENCIES if sym == s.currency), "")
+    style = "block" if s.blocks else "plain"
+    text = "\n\n".join([
+        setting_line(t(s.lang, "lbl_locale"), "{}, {} {}".format(
+            "🇷🇺 Русский" if s.lang == "ru" else "🇬🇧 English", s.currency, code)),
+        setting_line(t(s.lang, "lbl_style"), t(s.lang, "btn_style_" + style),
+                     t(s.lang, "txt_style_" + style)),
+        setting_line(t(s.lang, "lbl_rounding"), t(s.lang, "btn_round_" + rounding_key(s)),
+                     t(s.lang, "txt_round_" + rounding_key(s))),
+        setting_line(t(s.lang, "lbl_date"), s.date, t(s.lang, "txt_date")),
+        setting_line(t(s.lang, "lbl_rate"), t(s.lang, "txt_rate_line", rate=s.rate, cur=s.currency),
+                     t(s.lang, "txt_rate")),
+        setting_line(t(s.lang, "lbl_min_transfer"), money(s, minimum),
+                     t(s.lang, "txt_min_transfer")),
+    ])
 
     unit = money_step(s.currency, 1)
     keyboard = [
