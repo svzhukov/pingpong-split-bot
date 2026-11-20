@@ -128,7 +128,7 @@ def breakdown(s: Session, r: Result) -> str:
 
     body = []
     for row in ordered_rows(r):
-        paid = paid_text(s, row.paid_set, row.paid)
+        paid = paid_text(s, row.paid_set, s.paid_by(row.id))
         if not row.spans:
             body.append([cell(row), "-", paid])
         for i, (frm, to) in enumerate(row.spans):

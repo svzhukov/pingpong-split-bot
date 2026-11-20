@@ -337,12 +337,13 @@ Tables render as monospace text so the columns line up. Settings switches
 between plain monospace and a tinted `<pre>` block.
 
 Rounding is exact (Точно) by default, and one setting covers every amount
-the bot shows — paid, played, balance, debts, the session total, К ОПЛАТЕ and
-the transfers, which are worked out from those rounded amounts. Each share is
-rounded on its own, so players with the same time always show the
+the bot works out — played, balance, debts, the session total, К ОПЛАТЕ and the
+transfers, all from paid amounts rounded the same way. The one exception is what
+people typed: the Взнос column, the player screens and ⬇️ Скачать таблицу show
+paid as entered (58.7 stays 58.7), so a downloaded file pastes back unchanged.
+Each share is rounded on its own, so players with the same time always show the
 same amount; the residue that leaves over lands on the largest balance, so the
-transfers always cancel exactly. ⬇️ Скачать таблицу keeps paid as typed, so the
-file pastes back unchanged.
+transfers always cancel exactly.
 
 Transfers are planned to avoid crumbs first: an amount to pay is never split into
 transfers below the **minimum transfer** in Settings, even at the cost of one more
