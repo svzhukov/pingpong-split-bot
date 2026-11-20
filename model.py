@@ -580,7 +580,7 @@ class Session:
     rate: int = DEFAULT_RATE
     currency: str = DEFAULT_CURRENCY
     lang: str = "ru"
-    rounding: float = 0.1
+    rounding: float = 0.0
     blocks: bool = False
     min_transfer: Optional[float] = None    # None: the currency's default
     settled_at: Optional[str] = None
@@ -715,8 +715,7 @@ class Session:
         return session
 
 
-ROUNDING_STEPS = (0.0, 0.1, 0.5, 1.0)
-DEFAULT_ROUNDING = 0.1
+ROUNDING_STEPS = (0.0, 0.5, 1.0)
 
 
 def snap(amount: float, step: float) -> float:

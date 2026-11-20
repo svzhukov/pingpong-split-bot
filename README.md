@@ -336,7 +336,7 @@ one another's changes.
 Tables render as monospace text so the columns line up. Settings switches
 between plain monospace and a tinted `<pre>` block.
 
-Rounding is to 0.1 by default (Точно, До 0.1, До 0.5 or Целые), and one setting covers every amount
+Rounding is exact (Точно) by default, and one setting covers every amount
 the bot shows — paid, played, balance, debts, the session total, К ОПЛАТЕ and
 the transfers, which are worked out from those rounded amounts. Each share is
 rounded on its own, so players with the same time always show the
