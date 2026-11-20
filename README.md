@@ -336,9 +336,10 @@ one another's changes.
 Tables render as monospace text so the columns line up. Settings switches
 between plain monospace and a tinted `<pre>` block.
 
-Rounding to whole amounts is on by default, and it applies to every amount in
-the tables — paid, played and balance — plus the session total and К ОПЛАТЕ.
-Each share is rounded on its own, so players with the same time always show the
+Rounding to whole amounts is on by default, and one setting covers every amount
+the bot shows — paid, played, balance, debts, the session total, К ОПЛАТЕ and
+the transfers, which are worked out from those rounded amounts. Each share is
+rounded on its own, so players with the same time always show the
 same amount; the residue that leaves over lands on the largest balance, so the
 transfers always cancel exactly. ⬇️ Скачать таблицу keeps paid as typed, so the
 file pastes back unchanged.

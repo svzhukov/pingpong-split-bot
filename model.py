@@ -862,7 +862,8 @@ def compute(session: Session) -> Result:
     step = float(session.rounding or 0)
     if step:
         # each share rounded on its own, so the same time always shows the same
-        # amount; whatever that leaves over is parked on the biggest balance below
+        # amount; paid and debts are rounded the same way when the rows are built,
+        # and whatever that leaves over is parked on the biggest balance below
         total_cost = snap(total_cost, step)
         owed = {key: snap(value, step) for key, value in owed.items()}
 
@@ -875,8 +876,8 @@ def compute(session: Session) -> Result:
 
     rows = [
         Row(id=p.id, name=p.name, handle=p.handle, spans=[list(x) for x in p.spans],
-            owed=owed[p.id], paid=paid[p.id],
-            excluded=p.excluded, paid_set=p.paid_set, extra=extra[p.id])
+            owed=owed[p.id], paid=snap(paid[p.id], step),
+            excluded=p.excluded, paid_set=p.paid_set, extra=snap(extra[p.id], step))
         for p in session.players
     ]
 

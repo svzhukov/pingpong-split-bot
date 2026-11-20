@@ -5,7 +5,7 @@ from typing import List, Optional, Tuple
 from i18n import t
 from model import (CURRENCIES, ROUNDING_STEPS, Session, Result, Row, Player, compute, settle,
                    fmt_time, fmt_span, fmt_spans, fmt_dur, fmt_money, money_step, plural_ru,
-                   snap, transfer_minimum)
+                   transfer_minimum)
 
 Button = Tuple[str, str]
 Keyboard = List[List[Button]]
@@ -118,12 +118,8 @@ def span_text(spans) -> str:
     return fmt_spans(spans) if spans else "-"
 
 
-def shown(s: Session, amount: float) -> float:
-    return snap(amount, float(s.rounding or 0))
-
-
 def paid_text(s: Session, paid_set: bool, amount: float) -> str:
-    return money(s, shown(s, amount)) if paid_set else "-"
+    return money(s, amount) if paid_set else "-"
 
 
 def breakdown(s: Session, r: Result) -> str:
@@ -157,7 +153,7 @@ def subtotal_block(s: Session, r: Result) -> str:
         return ""
 
     headers = headers_from(s, "txt_subtotal_cols")
-    body = [[cell(row), money(s, row.owed), sign_money(s, shown(s, row.balance))]
+    body = [[cell(row), money(s, row.owed), sign_money(s, row.balance)]
             for row in ordered_rows(r) if row.spans]
 
     return "{}\n{}".format(bold(t(s.lang, "lbl_subtotal")),
@@ -240,7 +236,8 @@ def table_csv(s: Session) -> str:
     cols = ["col_name", "col_from", "col_to", "col_paid", "col_share", "col_balance"]
     lines = ["\t".join(t(s.lang, c) for c in cols)]
     for row in ordered_rows(r):
-        paid = plain_number(row.paid) if row.paid_set else "-"
+        # as typed, not rounded, so the file pastes back without changing anyone's money
+        paid = plain_number(s.paid_by(row.id)) if row.paid_set else "-"
         if not row.spans:
             lines.append("\t".join([row.handle or row.name, "-", "-", paid, "", ""]))
         for i, (frm, to) in enumerate(row.spans):
@@ -249,7 +246,7 @@ def table_csv(s: Session) -> str:
                 fmt_time(frm), fmt_time(to),
                 paid if i == 0 else "",
                 plain_number(row.owed) if i == 0 else "",
-                plain_number(shown(s, row.balance)) if i == 0 else "",
+                plain_number(row.balance) if i == 0 else "",
             ]))
     return "\n".join(lines)
 
