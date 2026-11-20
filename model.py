@@ -548,7 +548,6 @@ class Row:
     paid_set: bool = True
     adjustment: float = 0.0
     extra: float = 0.0
-    charged: float = 0.0
 
     @property
     def frm(self) -> int:
@@ -564,7 +563,7 @@ class Row:
 
     @property
     def settle_balance(self) -> float:
-        return self.paid - self.charged + self.extra + self.adjustment
+        return self.balance + self.adjustment
 
 
 @dataclass
@@ -719,6 +718,11 @@ class Session:
 ROUNDING_STEPS = (0.0, 0.5, 1.0)
 
 
+def snap(amount: float, step: float) -> float:
+    """To the nearest multiple of `step`; step 0 leaves the amount exact."""
+    return round(amount / step) * step if step else amount
+
+
 def spread(total: float, count: int, step: float) -> List[float]:
     """Hand out `total` across `count` people in whole multiples of `step`,
     so the pieces still add back up to it. step 0 means don't round at all."""
@@ -730,21 +734,6 @@ def spread(total: float, count: int, step: float) -> List[float]:
     sign = 1 if total >= 0 else -1
     base, remainder = divmod(int(round(abs(total) / step)), count)
     return [sign * (base + (1 if i < remainder else 0)) * step for i in range(count)]
-
-
-def apportion(values: Dict[str, float], target: float, step: float = 1.0) -> Dict[str, float]:
-    """Largest-remainder apportionment in units of `step`: every share lands on
-    a multiple of it and the shares still sum to exactly `target`."""
-    units = {key: value / step for key, value in values.items()}
-    floors = {key: math.floor(value) for key, value in units.items()}
-    remainder = int(round(target / step)) - sum(floors.values())
-    order = sorted(units, key=lambda key: (-(units[key] - floors[key]), key))
-
-    result = dict(floors)
-    for key in order[:max(0, remainder)]:
-        result[key] += 1
-
-    return {key: value * step for key, value in result.items()}
 
 
 @dataclass
@@ -871,9 +860,11 @@ def compute(session: Session) -> Result:
     total_cost = estimate if estimated else total_paid
 
     step = float(session.rounding or 0)
-    charged = dict(owed)
-    if step and owed and total_cost > 0:
-        charged = apportion(owed, round(total_cost / step) * step, step)
+    if step:
+        # each share rounded on its own, so the same time always shows the same
+        # amount; whatever that leaves over is parked on the biggest balance below
+        total_cost = snap(total_cost, step)
+        owed = {key: snap(value, step) for key, value in owed.items()}
 
     extra = {p.id: 0.0 for p in session.players}
     for d in session.debts:
@@ -884,13 +875,13 @@ def compute(session: Session) -> Result:
 
     rows = [
         Row(id=p.id, name=p.name, handle=p.handle, spans=[list(x) for x in p.spans],
-            owed=owed[p.id], paid=paid[p.id], charged=charged[p.id],
+            owed=owed[p.id], paid=paid[p.id],
             excluded=p.excluded, paid_set=p.paid_set, extra=extra[p.id])
         for p in session.players
     ]
 
     included = [row for row in rows if not row.excluded]
-    carried = sum(row.settle_balance for row in rows if row.excluded)
+    carried = sum(row.balance for row in rows if row.excluded)
 
     if included and abs(carried) > 0.005:
         for row, share in zip(included, spread(carried, len(included), step)):

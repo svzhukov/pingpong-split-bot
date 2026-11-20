@@ -336,12 +336,12 @@ one another's changes.
 Tables render as monospace text so the columns line up. Settings switches
 between plain monospace and a tinted `<pre>` block.
 
-Rounding to whole amounts is on by default, and it applies only to money that
-changes hands — the transfers, and К ОПЛАТЕ when nobody has paid yet. The ИТОГО
-table and the session total show exact shares, so players with the same time
-always show the same amount. For the transfers, shares are apportioned by
-largest remainder, and any sub-unit residue lands on the largest balance, so
-the transfers always cancel exactly.
+Rounding to whole amounts is on by default, and it applies to every amount in
+the tables — paid, played and balance — plus the session total and К ОПЛАТЕ.
+Each share is rounded on its own, so players with the same time always show the
+same amount; the residue that leaves over lands on the largest balance, so the
+transfers always cancel exactly. ⬇️ Скачать таблицу keeps paid as typed, so the
+file pastes back unchanged.
 
 Transfers are planned to avoid crumbs first: a debt is never split into
 transfers below the **minimum transfer** in Settings, even at the cost of one more
