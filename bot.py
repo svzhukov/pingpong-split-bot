@@ -21,7 +21,7 @@ from model import (BLANK, CURRENCY_RE, DAY, DEFAULT_LENGTH, NAME_LIMIT, SYMBOL_B
                    Session, clamp_span,
                    compute, extract_span, fmt_money, parse_paid, parse_roster,
                    parse_amount_note, parse_table, sheet_export_url,
-                   COPIED_FIELDS, copy_code, new_id, parse_date, parse_entry, parse_time, shift_date,
+                   COPIED_FIELDS, ROUNDING_STEPS, copy_code, new_id, parse_date, parse_entry, parse_time, shift_date,
                    today, transfer_minimum)
 from render import (Keyboard, plain_title, players_label, posted_title, render, summary,
                     table_csv)
@@ -733,7 +733,7 @@ def tap_settings(s: Session, parts):
         s.min_transfer = max(0, transfer_minimum(s) + int(value))
     elif key == "lang" and value in LANGUAGES:
         s.lang = value
-    elif key == "round":
+    elif key == "round" and float(value) in ROUNDING_STEPS:
         s.rounding = float(value)
     elif key == "blocks":
         s.blocks = value == "1"

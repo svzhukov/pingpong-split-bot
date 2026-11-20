@@ -2,7 +2,7 @@ import json
 import sqlite3
 from typing import Optional, Tuple
 
-from model import Session, DEFAULT_RATE, DEFAULT_CURRENCY
+from model import Session, DEFAULT_RATE, DEFAULT_CURRENCY, DEFAULT_ROUNDING
 
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS sessions (
@@ -15,7 +15,7 @@ CREATE TABLE IF NOT EXISTS settings (
     rate INTEGER NOT NULL DEFAULT 16,
     currency TEXT NOT NULL DEFAULT '₾',
     lang TEXT NOT NULL DEFAULT 'ru',
-    rounding REAL NOT NULL DEFAULT 1,
+    rounding REAL NOT NULL DEFAULT 0.1,
     blocks INTEGER NOT NULL DEFAULT 0,
     min_transfer REAL
 );
@@ -40,7 +40,7 @@ class Store:
         if "lang" not in columns:
             self.db.execute("ALTER TABLE settings ADD COLUMN lang TEXT NOT NULL DEFAULT 'ru'")
         if "rounding" not in columns:
-            self.db.execute("ALTER TABLE settings ADD COLUMN rounding REAL NOT NULL DEFAULT 1")
+            self.db.execute("ALTER TABLE settings ADD COLUMN rounding REAL NOT NULL DEFAULT 0.1")
         if "blocks" not in columns:
             self.db.execute("ALTER TABLE settings ADD COLUMN blocks INTEGER NOT NULL DEFAULT 0")
         if "min_transfer" not in columns:
@@ -79,9 +79,9 @@ class Store:
             "WHERE chat_id = ?", (chat_id,)
         ).fetchone()
         if not row:
-            return DEFAULT_RATE, DEFAULT_CURRENCY, "ru", 1.0, False, None
+            return DEFAULT_RATE, DEFAULT_CURRENCY, "ru", DEFAULT_ROUNDING, False, None
         return (row["rate"], row["currency"], row["lang"],
-                float(row["rounding"]), bool(row["blocks"]), row["min_transfer"])
+                float(row["rounding"]) or DEFAULT_ROUNDING, bool(row["blocks"]), row["min_transfer"])
 
     def remember_settings(self, s: Session) -> None:
         self.db.execute(

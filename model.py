@@ -580,7 +580,7 @@ class Session:
     rate: int = DEFAULT_RATE
     currency: str = DEFAULT_CURRENCY
     lang: str = "ru"
-    rounding: float = 1.0
+    rounding: float = 0.1
     blocks: bool = False
     min_transfer: Optional[float] = None    # None: the currency's default
     settled_at: Optional[str] = None
@@ -693,7 +693,8 @@ class Session:
             rate=raw.get("rate", DEFAULT_RATE),
             currency=raw.get("currency", DEFAULT_CURRENCY),
             lang=raw.get("lang", "ru"),
-            rounding=float(raw.get("rounding", 1) or 0),
+            # 0 was the old exact setting, which showed one decimal anyway
+            rounding=float(raw.get("rounding", 1) or 0.1),
             blocks=raw.get("blocks", False),
             min_transfer=raw.get("min_transfer"),
             settled_at=raw.get("settled_at"),
@@ -715,7 +716,8 @@ class Session:
         return session
 
 
-ROUNDING_STEPS = (0.0, 0.5, 1.0)
+ROUNDING_STEPS = (0.1, 0.5, 1.0)
+DEFAULT_ROUNDING = 0.1
 
 
 def snap(amount: float, step: float) -> float:
