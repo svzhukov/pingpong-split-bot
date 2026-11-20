@@ -560,7 +560,7 @@ def summary(s: Session) -> str:
 
 
 def owed_summary(s: Session, r: Result) -> str:
-    lines = "\n".join("• {} — {}".format(e(tag(row)), bold(money(s, row.owed)))
+    lines = "\n".join("• {} — {}".format(e(tag(row)), bold(money(s, row.charged)))
                       for row in ordered_rows(r))
 
     sections = [x for x in [debts_block(s, r)] if x]

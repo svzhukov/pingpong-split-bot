@@ -548,6 +548,7 @@ class Row:
     paid_set: bool = True
     adjustment: float = 0.0
     extra: float = 0.0
+    charged: float = 0.0
 
     @property
     def frm(self) -> int:
@@ -563,7 +564,7 @@ class Row:
 
     @property
     def settle_balance(self) -> float:
-        return self.balance + self.adjustment
+        return self.paid - self.charged + self.extra + self.adjustment
 
 
 @dataclass
@@ -870,9 +871,9 @@ def compute(session: Session) -> Result:
     total_cost = estimate if estimated else total_paid
 
     step = float(session.rounding or 0)
+    charged = dict(owed)
     if step and owed and total_cost > 0:
-        total_cost = round(total_cost / step) * step
-        owed = apportion(owed, total_cost, step)
+        charged = apportion(owed, round(total_cost / step) * step, step)
 
     extra = {p.id: 0.0 for p in session.players}
     for d in session.debts:
@@ -883,13 +884,13 @@ def compute(session: Session) -> Result:
 
     rows = [
         Row(id=p.id, name=p.name, handle=p.handle, spans=[list(x) for x in p.spans],
-            owed=owed[p.id], paid=paid[p.id],
+            owed=owed[p.id], paid=paid[p.id], charged=charged[p.id],
             excluded=p.excluded, paid_set=p.paid_set, extra=extra[p.id])
         for p in session.players
     ]
 
     included = [row for row in rows if not row.excluded]
-    carried = sum(row.balance for row in rows if row.excluded)
+    carried = sum(row.settle_balance for row in rows if row.excluded)
 
     if included and abs(carried) > 0.005:
         for row, share in zip(included, spread(carried, len(included), step)):
