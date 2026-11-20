@@ -442,7 +442,7 @@ def screen_debt(s: Session, r: Result):
 
 def setting_line(label: str, value: str, note: str = "") -> str:
     line = bold(value) + (" — " + note if note else "")
-    return "{}\n{}".format(bold(label), line)
+    return "{}\n{}".format(bold(label + ":"), line)
 
 
 def screen_settings(s: Session, r: Result):

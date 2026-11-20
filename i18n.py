@@ -6,7 +6,7 @@ STRINGS = {
     "title_player": {"ru": "👤 {name} · 🕐 {span}", "en": "👤 {name} · 🕐 {span}"},
     "title_player_edit": {"ru": "✏️ Редактирование игрока {name}",
                           "en": "✏️ Editing player {name}"},
-    "title_settings": {"ru": "⚙️ Настройки", "en": "⚙️ Settings"},
+    "title_settings": {"ru": "⚙️ Настройки бота и сессии", "en": "⚙️ Bot and session settings"},
     "title_help": {"ru": "❓ Как это работает", "en": "❓ How it works"},
     "title_currency": {"ru": "💱 Валюта", "en": "💱 Currency"},
     "title_pay": {"ru": "💰 {name} · {money}", "en": "💰 {name} · {money}"},
