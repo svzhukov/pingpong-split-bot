@@ -98,7 +98,7 @@ STRINGS = {
                         "en": "Couldn't read the chat. Try again, or send a table."},
     "txt_chat_too_long": {"ru": "Переписка слишком длинная — выберите только сообщения про эту сессию.",
                           "en": "The chat is too long — pick only the messages about this session."},
-    "txt_solo_home": {"ru": "Не участвуют в переводах: {names}", "en": "Not in transfers: {names}"},
+    "txt_solo_home": {"ru": "<b>Не участвуют в переводах:</b> {names}", "en": "<b>Not in transfers:</b> {names}"},
     "txt_solo_note": {"ru": "{names} — вне переводов. Разница разошлась поровну между остальными.",
                       "en": "{names} — outside transfers. The difference is spread evenly across the rest."},
     "txt_solo_over": {"ru": "переплата {money}", "en": "overpaid {money}"},
