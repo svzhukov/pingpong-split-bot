@@ -267,36 +267,35 @@ def apply_chat(session: Session, data: dict) -> Tuple[int, List[Tuple[Player, st
     return len(touched), list(notes.values())
 
 
-async def keep_typing(chat_id: int) -> None:
-    while True:
-        try:
-            await bot.send_chat_action(chat_id, "typing")
-        except TelegramBadRequest:
-            return
-        await asyncio.sleep(4)
+async def rewrite(message: Message, text: str) -> None:
+    try:
+        await message.edit_text(text, parse_mode="HTML")
+    except TelegramBadRequest as err:
+        log.info("could not edit the reading message (%s) — sending it anew", err)
+        await bot.send_message(message.chat.id, text, parse_mode="HTML")
 
 
-async def read_chat_into(session: Session, chat: str) -> Optional[str]:
-    """Reading takes seconds, so the chat shows the bot typing meanwhile; any
-    failure is said in one message and leaves the session as it was.
-    -> the message to send above the panel, or None when nothing was read."""
-    typing = asyncio.create_task(keep_typing(session.chat_id))
+async def read_chat_into(session: Session, chat: str) -> bool:
+    """Reading takes seconds, so a message says so straight away and then
+    becomes the result: the request to check the table with the model's guesses,
+    for the panel to follow right under it, or the failure, with the session
+    left as it was."""
+    status = await bot.send_message(session.chat_id, t(session.lang, "txt_chat_reading"))
     try:
         data = await chat_ai.read_chat(chat)
     except chat_ai.ChatTooLong:
-        await bot.send_message(session.chat_id, t(session.lang, "txt_chat_too_long"))
-        return None
+        await rewrite(status, t(session.lang, "txt_chat_too_long"))
+        return False
     except Exception as err:
         log.warning("chat read failed (%s)", err)
         data = None
-    finally:
-        typing.cancel()
 
     touched, notes = apply_chat(session, data) if data else (0, [])
     if not touched:
-        await bot.send_message(session.chat_id, t(session.lang, "txt_chat_failed"))
-        return None
-    return chat_notes(session, notes)
+        await rewrite(status, t(session.lang, "txt_chat_failed"))
+        return False
+    await rewrite(status, chat_notes(session, notes))
+    return True
 
 
 def session_from_table(chat_id: int, rows) -> Session:
@@ -417,7 +416,6 @@ async def replace_panel(session: Session, line: str) -> None:
 async def start_session(chat_id: int, user, args: str, reply) -> None:
     export = sheet_export_url(args or "")
     source = store.load_copy((args or "").strip().lower())
-    notes = None
     if source:
         session = copied_session(chat_id, source)
     elif export:
@@ -434,8 +432,7 @@ async def start_session(chat_id: int, user, args: str, reply) -> None:
         session = session_from_table(chat_id, rows)
     elif chat_ai.enabled() and chat_ai.looks_like_chat(args):
         session = blank_session(chat_id)
-        notes = await read_chat_into(session, args)
-        if notes is None:
+        if not await read_chat_into(session, args):
             return
     else:
         rows = parse_table(args or "", bare_handles=True)
@@ -448,8 +445,6 @@ async def start_session(chat_id: int, user, args: str, reply) -> None:
 
     session.editor = handle_of(user)
     store.save(session)
-    if notes:
-        await bot.send_message(chat_id, notes, parse_mode="HTML")
     await draw(session, force_new=True)
     store.save(session)
 
@@ -929,14 +924,12 @@ async def handle_text(message: Message):
     # outright and the paste works whether or not the panel is asking for something;
     # the chat goes first, since its report lines can read as table rows
     if chat_ai.enabled() and chat_ai.looks_like_chat(text):
-        notes = await read_chat_into(session, text)
-        if notes is None:
+        if not await read_chat_into(session, text):
             return
         session.focus.pop("retry", None)
         session.awaiting = None
-        # the notes go out as their own message, and the panel follows them
-        # down so the guesses sit right above the table they explain
-        await bot.send_message(session.chat_id, notes, parse_mode="HTML")
+        # the panel follows the notes down, so the guesses sit right above the
+        # table they explain
         return await repost_panel(session)
     elif await absorb_table(session, text):
         pass

@@ -242,15 +242,18 @@ the group's saved rate does. Money a guest handed to a player moves from that
 player's payment to the guest, who then settles separately. Unmentioned payment
 is 0; a duration alone, or only a start or an end, becomes a guessed window.
 
-Every chat read sends one message of its own just above the panel — the only
-message besides the settle-up the bot posts — starting `🤖 Таблица была
-сгенерирована из переписки, пожалуйста, перепроверьте и отредактируйте.` and,
-when it guessed anything, `Вот мои предположения:` with one line per player,
-`• @misha — <note>`. A chat sent as a reply to an existing panel moves the panel
-down below that message, so the guesses always sit right above the table. A
-name already in the session is updated rather than added twice. Nothing is read unless
+Every chat read posts one message of its own — the only message besides the
+settle-up the bot posts. It appears at once as `🤖 Читаю переписку…`, since
+reading takes seconds and the panel waits meanwhile, then turns into the result:
+`🤖 Таблица была сгенерирована из переписки, пожалуйста, перепроверьте и
+отредактируйте.` and, when it guessed anything, `Вот мои предположения:` with one
+line per player, `• @misha — <note>`, with the panel posted right under it. A
+chat sent as a reply to an existing panel moves the panel down below that
+message, so the guesses always sit right above the table. A name already in the
+session is updated rather than added twice. Nothing is read unless
 `ANTHROPIC_API_KEY` is set in `.env`; a chat longer than 12 000 characters is
-refused, and any failure says so in one message and leaves the session as it was.
+refused, and any failure turns the message into saying so and leaves the session
+as it was.
 
 ## Multiple windows per player
 
