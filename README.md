@@ -223,7 +223,8 @@ instead of anyone typing a table:
 
 - **Pasted:** copy the messages (Telegram Desktop, the phone, anywhere that keeps
   the `Имя, [дата время]` header above each one) and send them after `/split`,
-  or as a reply to the panel.
+  or as a reply to the panel. Not in the guide for now: `/help` mentions only
+  forwarding.
 - **Forwarded:** select the messages and forward them to the bot in a private
   chat. A batch arrives as one message per forwarded message; the bot gathers
   them until 2 seconds pass with nothing new, then reads them together. The
