@@ -117,14 +117,14 @@ NBSP = "\u00a0"
 
 
 def fmt_money(amount: float, currency: str = DEFAULT_CURRENCY) -> str:
-    value = "{:.1f}".format(round(amount, 1))
+    value = "{:.1f}".format(abs(round(amount, 1)))
     if value.endswith(".0"):
         value = value[:-2]
-    if value == "-0":
-        value = "0"
+    # a typographic minus, ahead of a prefixed symbol too: −$5, −5 ₾
+    sign = "−" if round(amount, 1) < 0 else ""
     if currency in PREFIXED:
-        return currency + value
-    return value + NBSP + currency
+        return sign + currency + value
+    return sign + value + NBSP + currency
 
 
 TIME_RE = re.compile(r"^(\d{1,2})(?:[:.\s]?(\d{2}))?$")
@@ -639,13 +639,17 @@ class Session:
         return sum(y.amount for y in self.payments if y.player_id == player_id)
 
     def set_paid(self, player_id: str, amount: float,
-                 frm: Optional[int] = None, to: Optional[int] = None) -> None:
-        amount = max(0.0, round(amount, 1))
+                 frm: Optional[int] = None, to: Optional[int] = None,
+                 allow_negative: bool = False) -> None:
+        """Below zero only when asked: a player who paid nothing but was handed
+        a guest's cash holds that money for the group, which is a negative
+        contribution — read from a chat, never typed."""
+        amount = round(amount, 1) if allow_negative else max(0.0, round(amount, 1))
         player = self.player(player_id)
         if player:
             player.paid_set = True
         self.payments = [y for y in self.payments if y.player_id != player_id]
-        if amount > 0:
+        if abs(amount) > 0.005:
             self.payments.append(Payment(id=new_id(), player_id=player_id,
                                          amount=amount, frm=frm, to=to))
 

@@ -256,7 +256,7 @@ def apply_chat(session: Session, data: dict) -> Tuple[int, List[Tuple[Player, st
             frm, to = parse_time(window.get("from") or ""), parse_time(window.get("to") or "")
             if frm is not None and to is not None:
                 player.add_span(frm, to + (DAY if to <= frm else 0))
-        session.set_paid(player.id, session.paid_by(player.id) + float(item.get("paid") or 0))
+        session.set_paid(player.id, session.paid_by(player.id) + float(item.get("paid") or 0), allow_negative=True)
         player.excluded = bool(item.get("settles_separately"))
 
         note = (item.get("note") or "").strip()
@@ -853,8 +853,11 @@ def tap_paid(s: Session, parts):
     except ValueError:
         return None
 
-    # set_paid replaces the payment, so the window it covered goes back in with it
-    s.set_paid(player_id, s.paid_by(player_id) + delta, *(s.paid_span(player_id) or ()))
+    # set_paid replaces the payment, so the window it covered goes back in with it;
+    # an amount already below zero (cash held for the group) steps from where it is
+    # instead of jumping to 0, while one at or above zero still stops at 0
+    s.set_paid(player_id, s.paid_by(player_id) + delta, *(s.paid_span(player_id) or ()),
+               allow_negative=s.paid_by(player_id) < 0)
     return None
 
 
