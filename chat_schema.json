@@ -32,7 +32,7 @@
           "settles_separately": {"type": "boolean"},
           "note": {
             "anyOf": [{"type": "string"}, {"type": "null"}],
-            "description": "What was guessed or worked out for this player and from what, one short sentence; null when nothing was"
+            "description": "What was guessed or worked out for this player and from what, one or two short sentences; null when nothing was"
           }
         },
         "required": ["name", "windows", "paid", "settles_separately", "note"],

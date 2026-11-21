@@ -10,7 +10,7 @@ People in the chat report when they played and what they paid toward the tables.
 - **windows**: when they played, 24-hour `HH:MM`. Normalize every form: `19;45` → `19:45`, `с 19 до 22` → `19:00`–`22:00`, `20.10` → `20:10`. The session is one evening, so a bare `9` or `10` next to evening times means 21:00 or 22:00. Someone who left and came back has several windows. Empty when unknown.
 - **paid**: the money that person put toward the session. Anyone whose messages mention no payment paid `0`.
 - **settles_separately**: `true` for a person whose only payment is money handed to another player and who closed no table themselves; `false` for everyone else.
-- **note**: one short sentence in the chat's language, without their name, saying what you guessed or worked out for this player and from what: a guessed window (`время по длительности 1:20, окончание по уходу Миши в 22:00 — догадка`), money moved between players (`закрыл стол за 37.80, минус 10, переданные товарищем`), an unknown sender. `null` when their messages state everything plainly. A note is about that player only, always in the chat's language: never the session date, and never a missing time, which the bot already shows.
+- **note**: one or two short sentences in the chat's language, without their name, saying what you guessed or worked out for this player and from what: a guessed window (`время по длительности 1:20, окончание по уходу Миши в 22:00 — догадка`), money moved between players (`закрыл стол за 37.80, минус 10, переданные товарищем`), an unknown sender. `null` when their messages state everything plainly. A note is about that player only, always in the chat's language: never the session date, and never a missing time, which the bot already shows.
 
 ## Reading the chat
 

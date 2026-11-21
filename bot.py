@@ -24,7 +24,7 @@ from model import (BLANK, CURRENCY_RE, DAY, DEFAULT_LENGTH, NAME_LIMIT, SYMBOL_B
                    parse_amount_note, parse_table, sheet_export_url,
                    COPIED_FIELDS, ROUNDING_STEPS, copy_code, new_id, parse_date, parse_entry, parse_time, shift_date,
                    today, transfer_minimum)
-from render import (Keyboard, plain_title, players_label, posted_title, render, summary,
+from render import (Keyboard, chat_notes, plain_title, players_label, posted_title, render, summary,
                     table_csv)
 from store import Store
 
@@ -222,20 +222,21 @@ def apply_paid(session: Session, player: Player, paid) -> None:
         session.set_paid(player.id, 0)
 
 
-NOTE_LIMIT = 160
+NOTE_LIMIT = 300
 
 
-def apply_chat(session: Session, data: dict) -> int:
+def apply_chat(session: Session, data: dict) -> Tuple[int, List[Tuple[Player, str]]]:
     """A chat the model has read: its date and any rate it states, then every
     player it found — added, or, under a name already in the session, given
-    the chat's time, money and settles-separately in place of what they had."""
+    the chat's time, money and settles-separately in place of what they had.
+    -> how many players it touched, and its note on each one it guessed about."""
     day = parse_date(data.get("date") or "")
     if day:
         session.date = day
     if data.get("rate"):
         session.rate = int(round(data["rate"]))
 
-    touched = set()
+    touched, notes = set(), {}
     for item in data.get("players") or []:
         name = (item.get("name") or "").strip()
         if not is_name(name):
@@ -260,12 +261,10 @@ def apply_chat(session: Session, data: dict) -> int:
 
         note = (item.get("note") or "").strip()
         if note:
-            session.notes[player.id] = note[:NOTE_LIMIT]
-        else:
-            session.notes.pop(player.id, None)
+            notes[player.id] = (player, note[:NOTE_LIMIT])
         touched.add(player.id)
 
-    return len(touched)
+    return len(touched), list(notes.values())
 
 
 async def keep_typing(chat_id: int) -> None:
@@ -277,25 +276,27 @@ async def keep_typing(chat_id: int) -> None:
         await asyncio.sleep(4)
 
 
-async def read_chat_into(session: Session, chat: str) -> bool:
+async def read_chat_into(session: Session, chat: str) -> Optional[str]:
     """Reading takes seconds, so the chat shows the bot typing meanwhile; any
-    failure is said in one message and leaves the session as it was."""
+    failure is said in one message and leaves the session as it was.
+    -> the message to send above the panel, or None when nothing was read."""
     typing = asyncio.create_task(keep_typing(session.chat_id))
     try:
         data = await chat_ai.read_chat(chat)
     except chat_ai.ChatTooLong:
         await bot.send_message(session.chat_id, t(session.lang, "txt_chat_too_long"))
-        return False
+        return None
     except Exception as err:
         log.warning("chat read failed (%s)", err)
         data = None
     finally:
         typing.cancel()
 
-    if not data or not apply_chat(session, data):
+    touched, notes = apply_chat(session, data) if data else (0, [])
+    if not touched:
         await bot.send_message(session.chat_id, t(session.lang, "txt_chat_failed"))
-        return False
-    return True
+        return None
+    return chat_notes(session, notes)
 
 
 def session_from_table(chat_id: int, rows) -> Session:
@@ -416,6 +417,7 @@ async def replace_panel(session: Session, line: str) -> None:
 async def start_session(chat_id: int, user, args: str, reply) -> None:
     export = sheet_export_url(args or "")
     source = store.load_copy((args or "").strip().lower())
+    notes = None
     if source:
         session = copied_session(chat_id, source)
     elif export:
@@ -432,7 +434,8 @@ async def start_session(chat_id: int, user, args: str, reply) -> None:
         session = session_from_table(chat_id, rows)
     elif chat_ai.enabled() and chat_ai.looks_like_chat(args):
         session = blank_session(chat_id)
-        if not await read_chat_into(session, args):
+        notes = await read_chat_into(session, args)
+        if notes is None:
             return
     else:
         rows = parse_table(args or "", bare_handles=True)
@@ -445,6 +448,8 @@ async def start_session(chat_id: int, user, args: str, reply) -> None:
 
     session.editor = handle_of(user)
     store.save(session)
+    if notes:
+        await bot.send_message(chat_id, notes, parse_mode="HTML")
     await draw(session, force_new=True)
     store.save(session)
 
@@ -924,8 +929,15 @@ async def handle_text(message: Message):
     # outright and the paste works whether or not the panel is asking for something;
     # the chat goes first, since its report lines can read as table rows
     if chat_ai.enabled() and chat_ai.looks_like_chat(text):
-        if not await read_chat_into(session, text):
+        notes = await read_chat_into(session, text)
+        if notes is None:
             return
+        session.focus.pop("retry", None)
+        session.awaiting = None
+        # the notes go out as their own message, and the panel follows them
+        # down so the guesses sit right above the table they explain
+        await bot.send_message(session.chat_id, notes, parse_mode="HTML")
+        return await repost_panel(session)
     elif await absorb_table(session, text):
         pass
     elif not handle_awaited(session, text) and not handle_in_context(session, text):

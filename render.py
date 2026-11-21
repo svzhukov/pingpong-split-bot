@@ -202,12 +202,13 @@ def waiting_block(s: Session) -> str:
                            t(s.lang, "txt_waiting_hint"))
 
 
-def notes_block(s: Session) -> str:
-    noted = [(p, s.notes[p.id]) for p in s.players if s.notes.get(p.id)]
-    if not noted:
-        return ""
-    lines = ["• {} — {}".format(e(bidi_safe(p.handle or p.name)), e(note)) for p, note in noted]
-    return "{}\n{}".format(t(s.lang, "lbl_guessed"), "\n".join(lines))
+def chat_notes(s: Session, notes) -> str:
+    """Sent once, just above the panel, after a chat is read into the session:
+    a request to check the table, and each guess the model made."""
+    if not notes:
+        return t(s.lang, "txt_generated")
+    lines = ["• {} — {}".format(e(bidi_safe(p.handle or p.name)), e(note)) for p, note in notes]
+    return "{} {}\n{}".format(t(s.lang, "txt_generated"), t(s.lang, "lbl_guesses"), "\n".join(lines))
 
 
 def solo_block(s: Session) -> str:
@@ -309,7 +310,7 @@ def screen_home(s: Session, r: Result):
     else:
         keyboard.append([(t(s.lang, "btn_settle" + waiting), "post")])
 
-    body = "\n\n".join(part for part in [notes_block(s), waiting_block(s), solo_block(s), home_body(s, r)] if part)
+    body = "\n\n".join(part for part in [waiting_block(s), solo_block(s), home_body(s, r)] if part)
     return status_title(s, r), body, keyboard
 
 

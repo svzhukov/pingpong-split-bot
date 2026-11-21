@@ -91,8 +91,9 @@ STRINGS = {
     "txt_status_editing": {"ru": "редактируется {name}", "en": "editing by {name}"},
     "txt_locked": {"ru": "Сессия рассчитана — нажмите «Исправить»",
                    "en": "Session is calculated — tap “Fix”"},
-    "lbl_guessed": {"ru": "🤖 Таблица была сгенерирована из переписки, пожалуйста, перепроверьте и отредактируйте. Вот мои предположения:",
-                    "en": "🤖 This table was generated from the chat, please check and edit it. Here are my guesses:"},
+    "txt_generated": {"ru": "🤖 Таблица была сгенерирована из переписки, пожалуйста, перепроверьте и отредактируйте.",
+                      "en": "🤖 This table was generated from the chat, please check and edit it."},
+    "lbl_guesses": {"ru": "Вот мои предположения:", "en": "Here are my guesses:"},
     "txt_chat_reading": {"ru": "🤖 Читаю переписку…", "en": "🤖 Reading the chat…"},
     "txt_chat_failed": {"ru": "Не получилось прочитать переписку. Попробуйте ещё раз или пришлите таблицу.",
                         "en": "Couldn't read the chat. Try again, or send a table."},
@@ -215,8 +216,8 @@ STRINGS = {
             "или ссылку на Google таблицу\n\n"
             "<code>/edit @маша 20:00-22:00 50</code> — добавить игрока или поправить его строку; "
             "свою — <code>/edit 20:00-22:00 50</code>, если вы уже в таблице под своим ником\n\n"
-            "🤖 <b>Из переписки:</b> выделите в группе сообщения, где все писали время и взносы, "
-            "и перешлите их боту в личку — он соберёт таблицу сам. Это черновик, проверьте его.\n\n"
+            "<b>Из переписки:</b> выделите в группе сообщения, где все писали время и взносы, "
+            "и просто перешлите их боту в личку — он соберёт таблицу сам с помощью магии ✨ LLM.\n\n"
             "❗️ В группе <b>бот видит только ответы на свою панель</b> — присылайте всё "
             "ответом на неё.\n\n"
             "<b>Как считается:</b> время делят поровну все, кто играл в этот момент. "
@@ -234,8 +235,8 @@ STRINGS = {
             "or a Google Sheets link\n\n"
             "<code>/edit @masha 20:00-22:00 50</code> — add a player or fix their row; "
             "your own — <code>/edit 20:00-22:00 50</code>, if you're already in the table under your username\n\n"
-            "🤖 <b>From the chat:</b> select the messages in the group where everyone posted their time and payment, "
-            "and forward them to the bot in a private chat — it builds the table itself. It's a draft, so check it.\n\n"
+            "<b>From the chat:</b> select the messages in the group where everyone posted their time and payment, "
+            "and just forward them to the bot in a private chat — it builds the table itself with ✨ LLM magic.\n\n"
             "❗️ In a group <b>the bot only sees replies to its own panel</b> — send everything "
             "as a reply to it.\n\n"
             "<b>How it's counted:</b> everyone playing at a given moment shares that time "

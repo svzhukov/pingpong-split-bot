@@ -597,7 +597,6 @@ class Session:
     screen: str = "home"
     focus: Dict[str, Any] = field(default_factory=dict)
     awaiting: Optional[str] = None
-    notes: Dict[str, str] = field(default_factory=dict)    # player id -> what reading a chat guessed
 
     def player(self, player_id: str) -> Optional[Player]:
         return next((p for p in self.players if p.id == player_id), None)
@@ -629,7 +628,6 @@ class Session:
         """Debts and payments die with the player — a debt pointing at someone
         who is gone is money the settlement can never hand to anyone."""
         self.players = [p for p in self.players if p.id != player_id]
-        self.notes.pop(player_id, None)
         self.payments = [y for y in self.payments if y.player_id != player_id]
         self.debts = [d for d in self.debts
                       if d.debtor != player_id and d.creditor != player_id]
@@ -712,7 +710,6 @@ class Session:
             screen=raw.get("screen", "home"),
             focus=raw.get("focus", {}),
             awaiting=raw.get("awaiting"),
-            notes=raw.get("notes") or {},
         )
         session.net_debts()
         return session
