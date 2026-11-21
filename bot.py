@@ -6,7 +6,7 @@ import re
 import weakref
 from datetime import datetime
 from html import escape
-from typing import Optional
+from typing import Dict, List, Optional, Tuple
 
 import aiohttp
 from aiogram import Bot, Dispatcher, F
@@ -16,6 +16,7 @@ from aiogram.types import (BufferedInputFile, CallbackQuery, InlineKeyboardButto
                            InlineKeyboardMarkup, LinkPreviewOptions, Message)
 from dotenv import load_dotenv
 
+import chat_ai
 from i18n import LANGUAGES, t
 from model import (BLANK, CURRENCY_RE, DAY, DEFAULT_LENGTH, NAME_LIMIT, SYMBOL_BY_CODE, Player,
                    Session, clamp_span,
@@ -221,6 +222,82 @@ def apply_paid(session: Session, player: Player, paid) -> None:
         session.set_paid(player.id, 0)
 
 
+NOTE_LIMIT = 80
+
+
+def apply_chat(session: Session, data: dict) -> int:
+    """A chat the model has read: its date and any rate it states, then every
+    player it found — added, or, under a name already in the session, given
+    the chat's time, money and settles-separately in place of what they had."""
+    day = parse_date(data.get("date") or "")
+    if day:
+        session.date = day
+    if data.get("rate"):
+        session.rate = int(round(data["rate"]))
+
+    touched = set()
+    for item in data.get("players") or []:
+        name = (item.get("name") or "").strip()
+        if not is_name(name):
+            continue
+
+        player = session.find_by_name(name)
+        if player is None:
+            handle = name if name.startswith("@") and " " not in name else ""
+            player = Player(id=new_id(), name=name.lstrip("@")[:NAME_LIMIT] if handle else name[:NAME_LIMIT],
+                            handle=handle[:NAME_LIMIT])
+            session.players.append(player)
+        if player.id not in touched:
+            player.spans = []
+            session.set_paid(player.id, 0)
+
+        for window in item.get("windows") or []:
+            frm, to = parse_time(window.get("from") or ""), parse_time(window.get("to") or "")
+            if frm is not None and to is not None:
+                player.add_span(frm, to + (DAY if to <= frm else 0))
+        session.set_paid(player.id, session.paid_by(player.id) + float(item.get("paid") or 0))
+        player.excluded = bool(item.get("settles_separately"))
+
+        note = (item.get("note") or "").strip()
+        if note:
+            session.notes[player.id] = note[:NOTE_LIMIT]
+        else:
+            session.notes.pop(player.id, None)
+        touched.add(player.id)
+
+    return len(touched)
+
+
+async def keep_typing(chat_id: int) -> None:
+    while True:
+        try:
+            await bot.send_chat_action(chat_id, "typing")
+        except TelegramBadRequest:
+            return
+        await asyncio.sleep(4)
+
+
+async def read_chat_into(session: Session, chat: str) -> bool:
+    """Reading takes seconds, so the chat shows the bot typing meanwhile; any
+    failure is said in one message and leaves the session as it was."""
+    typing = asyncio.create_task(keep_typing(session.chat_id))
+    try:
+        data = await chat_ai.read_chat(chat)
+    except chat_ai.ChatTooLong:
+        await bot.send_message(session.chat_id, t(session.lang, "txt_chat_too_long"))
+        return False
+    except Exception as err:
+        log.warning("chat read failed (%s)", err)
+        data = None
+    finally:
+        typing.cancel()
+
+    if not data or not apply_chat(session, data):
+        await bot.send_message(session.chat_id, t(session.lang, "txt_chat_failed"))
+        return False
+    return True
+
+
 def session_from_table(chat_id: int, rows) -> Session:
     session = blank_session(chat_id)
     apply_rows(session, rows)
@@ -353,6 +430,10 @@ async def start_session(chat_id: int, user, args: str, reply) -> None:
         if not rows:
             return await reply.answer(t(lang_of(chat_id), "txt_sheet_empty"))
         session = session_from_table(chat_id, rows)
+    elif chat_ai.enabled() and chat_ai.looks_like_chat(args):
+        session = blank_session(chat_id)
+        if not await read_chat_into(session, args):
+            return
     else:
         rows = parse_table(args or "", bare_handles=True)
         if rows and looks_like_table(args):
@@ -375,10 +456,14 @@ async def on_split(message: Message, command: CommandObject):
 
 
 async def handle_split(message: Message, command: CommandObject):
+    await split_with(message, command.args)
+
+
+async def split_with(message: Message, args: Optional[str]):
     current = store.load(message.chat.id)
 
     if current and current.players and current.status != "closed":
-        current.pending = command.args or ""
+        current.pending = args or ""
         store.save(current)
         total = compute(current)
         return await message.answer(
@@ -388,7 +473,7 @@ async def handle_split(message: Message, command: CommandObject):
                                   (t(current.lang, "btn_no"), "renewno")]]),
         )
 
-    await start_session(message.chat.id, message.from_user, command.args, message)
+    await start_session(message.chat.id, message.from_user, args, message)
 
 
 async def repost_panel(session: Session) -> None:
@@ -772,6 +857,51 @@ def tap_paid(s: Session, parts):
     return None
 
 
+FORWARD_QUIET = 2.0
+_forwards: Dict[int, List[Tuple[datetime, str, str]]] = {}
+_forward_timers: Dict[int, asyncio.Task] = {}
+
+
+def sender_of(origin) -> str:
+    """Whoever sent the original: their @username when they have one, so the
+    player row matches /edit and the fill-in list; just a name when they hide
+    their account in forwards."""
+    user = getattr(origin, "sender_user", None)
+    if user:
+        return "@" + user.username if user.username else user.full_name
+    source = getattr(origin, "sender_chat", None) or getattr(origin, "chat", None)
+    return getattr(origin, "sender_user_name", None) or getattr(source, "title", None) or "?"
+
+
+@dp.message(F.chat.type == "private", F.forward_origin)
+async def on_forward(message: Message):
+    """Forwarding a batch delivers one message per forwarded message, all within
+    milliseconds, so they are gathered until the DM goes quiet and then read as
+    one chat — the same as /split with that chat pasted."""
+    text = message.text or message.caption or ""
+    if not chat_ai.enabled() or not text.strip():
+        return
+
+    chat_id = message.chat.id
+    _forwards.setdefault(chat_id, []).append((message.forward_origin.date, sender_of(message.forward_origin), text))
+    timer = _forward_timers.get(chat_id)
+    if timer:
+        timer.cancel()
+    _forward_timers[chat_id] = asyncio.create_task(flush_forwards(message))
+
+
+async def flush_forwards(message: Message) -> None:
+    chat_id = message.chat.id
+    await asyncio.sleep(FORWARD_QUIET)
+    # from here on a newer forward starts its own batch instead of cancelling this one
+    _forward_timers.pop(chat_id, None)
+    entries = _forwards.pop(chat_id, [])
+    if not entries:
+        return
+    async with chat_lock(chat_id):
+        await split_with(message, chat_ai.transcript(entries))
+
+
 @dp.message(F.text)
 async def on_text(message: Message):
     async with chat_lock(message.chat.id):
@@ -790,9 +920,13 @@ async def handle_text(message: Message):
     if not replies_to_panel(message, session):
         return
 
-    # a table is never a valid name/time/amount, so it wins outright and the
-    # paste works whether or not the panel happens to be asking for something
-    if await absorb_table(session, text):
+    # a copied chat or a table is never a valid name/time/amount, so either wins
+    # outright and the paste works whether or not the panel is asking for something;
+    # the chat goes first, since its report lines can read as table rows
+    if chat_ai.enabled() and chat_ai.looks_like_chat(text):
+        if not await read_chat_into(session, text):
+            return
+    elif await absorb_table(session, text):
         pass
     elif not handle_awaited(session, text) and not handle_in_context(session, text):
         # keep the prompt live and say so on the panel — a silent no-op

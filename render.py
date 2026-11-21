@@ -202,6 +202,14 @@ def waiting_block(s: Session) -> str:
                            t(s.lang, "txt_waiting_hint"))
 
 
+def notes_block(s: Session) -> str:
+    noted = [(p, s.notes[p.id]) for p in s.players if s.notes.get(p.id)]
+    if not noted:
+        return ""
+    lines = ["• {} — {}".format(e(bidi_safe(p.handle or p.name)), e(note)) for p, note in noted]
+    return "{}\n{}".format(t(s.lang, "lbl_guessed"), "\n".join(lines))
+
+
 def solo_block(s: Session) -> str:
     solo = [p for p in s.players if p.excluded]
     if not solo:
@@ -301,7 +309,7 @@ def screen_home(s: Session, r: Result):
     else:
         keyboard.append([(t(s.lang, "btn_settle" + waiting), "post")])
 
-    body = "\n\n".join(part for part in [waiting_block(s), solo_block(s), home_body(s, r)] if part)
+    body = "\n\n".join(part for part in [notes_block(s), waiting_block(s), solo_block(s), home_body(s, r)] if part)
     return status_title(s, r), body, keyboard
 
 

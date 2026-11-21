@@ -1,0 +1,45 @@
+{
+  "type": "object",
+  "properties": {
+    "date": {
+      "anyOf": [{"type": "string"}, {"type": "null"}],
+      "description": "Day the games were played, DD.MM.YY; null when the chat has no timestamps"
+    },
+    "rate": {
+      "anyOf": [{"type": "number"}, {"type": "null"}],
+      "description": "Price of one table per hour, only when a message states it; null otherwise"
+    },
+    "players": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {"type": "string"},
+          "windows": {
+            "type": "array",
+            "description": "When they played; empty when unknown",
+            "items": {
+              "type": "object",
+              "properties": {
+                "from": {"type": "string", "description": "HH:MM, 24-hour"},
+                "to": {"type": "string", "description": "HH:MM, 24-hour"}
+              },
+              "required": ["from", "to"],
+              "additionalProperties": false
+            }
+          },
+          "paid": {"type": "number"},
+          "settles_separately": {"type": "boolean"},
+          "note": {
+            "anyOf": [{"type": "string"}, {"type": "null"}],
+            "description": "What was guessed for this player, a few words; null when nothing was"
+          }
+        },
+        "required": ["name", "windows", "paid", "settles_separately", "note"],
+        "additionalProperties": false
+      }
+    }
+  },
+  "required": ["date", "rate", "players"],
+  "additionalProperties": false
+}

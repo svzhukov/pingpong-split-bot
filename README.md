@@ -156,6 +156,7 @@ from @BotFather.
 | `/split @misha 19-21 @pasha 20-22` | …with a time each — a time belongs only to the name before it |
 | `/split <Google Sheets link>` | Reads the table from the sheet |
 | `/split <code>` | Opens a copy of a session from another chat — see Copying a session |
+| `/split <copied chat>` | Reads players, times and money from a copied group chat — see Reading a chat |
 | `/edit @masha 20-22 35` | Adds Masha, or fixes her row if she's already in — same name, time, money; several names, or one per line, work too |
 | `/edit 20-22 35` | Fixes the sender's own row, found by their @username |
 
@@ -195,7 +196,7 @@ only to that person:
 
 | Window | Opened by | Accepts | Closes |
 | --- | --- | --- | --- |
-| table | `/split` creating the session | a pasted table or a Sheets link | on the first table that parses, or once the session has any player |
+| table | `/split` creating the session | a pasted table, a Sheets link, or a copied chat | on the first table that parses, or once the session has any player |
 | new player | ＋ Игрок | a name, or `Имя 19-21 35` | on success, or after 3 minutes |
 | time / contribution / name / debt / rate | their own buttons | the value asked for | on success, or after 3 minutes |
 
@@ -213,6 +214,37 @@ Existing players are edited from their own screen, never by typing in the chat.
 That screen and the ones under it (🕐 Время, 💰 Взнос, Прошлый долг) show only
 that player's line and hint — the session tables are on the main screen alone,
 so nobody takes a player screen for the main one and forgets to tap back.
+
+## Reading a chat
+
+People report in the group as they finish — `Оплатил 5 стол 17 лари`,
+`Играл 19:20-21:25` — and the bot can turn those messages into the session
+instead of anyone typing a table:
+
+- **Pasted:** copy the messages (Telegram Desktop, the phone, anywhere that keeps
+  the `Имя, [дата время]` header above each one) and send them after `/split`,
+  or as a reply to the panel.
+- **Forwarded:** select the messages and forward them to the bot in a private
+  chat. A batch arrives as one message per forwarded message; the bot gathers
+  them until 2 seconds pass with nothing new, then reads them together. The
+  session opens in that private chat with its settings; copy it to the group with
+  📋 Копировать сессию if wanted. Forwards carry each sender's @username unless
+  they hide their account, so players come in tagged.
+
+Claude Haiku (`MODEL` in `chat_ai.py`) reads the text with the instructions in
+`chat_prompt.md` and answers in the shape `chat_schema.json` fixes: the date the
+games were played, a table price per hour when a message states one, and per
+player their windows, what they paid, whether they settle separately, and a note
+on anything it guessed. A stated price applies to that session only; otherwise
+the group's saved rate does. Money a guest handed to a player moves from that
+player's payment to the guest, who then settles separately. Unmentioned payment
+is 0; a duration alone, or only a start or an end, becomes a guessed window.
+
+Whatever it guessed is listed under the panel title, `🤖 Угадано из переписки:`,
+one line per player, until the session is settled. A name already in the
+session is updated rather than added twice. Nothing is read unless
+`ANTHROPIC_API_KEY` is set in `.env`; a chat longer than 12 000 characters is
+refused, and any failure says so in one message and leaves the session as it was.
 
 ## Multiple windows per player
 
@@ -325,6 +357,8 @@ record, and ⬇️ Скачать таблицу exports the current one as TSV.
 | `i18n.py` | Every user-facing string in Russian and English |
 | `store.py` | SQLite persistence |
 | `bot.py` | Handlers, callback routing, coalesced message edits |
+| `chat_ai.py` | Reads a copied or forwarded chat with Claude; spots a copied chat |
+| `chat_prompt.md`, `chat_schema.json` | What the model is told, and the JSON shape it must answer in |
 | `run.sh` | Supervisor loop — restarts the bot when it exits |
 
 ## Notes
