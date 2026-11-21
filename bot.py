@@ -46,18 +46,6 @@ dp = Dispatcher()
 store = Store(DB_PATH)
 
 
-@dp.message.outer_middleware()
-async def log_forward_shape(handler, message: Message, data):
-    if message.chat.type == "private" and message.forward_origin:
-        origin = message.forward_origin
-        user = getattr(origin, "sender_user", None)
-        log.info("forward probe: id=%s at=%s group=%s origin=%s origin_at=%s user=%s username=%s type=%s text=%s caption=%s",
-                 message.message_id, message.date.isoformat(), message.media_group_id, origin.type,
-                 origin.date.isoformat(), bool(user), bool(user and user.username), message.content_type,
-                 len(message.text or ""), len(message.caption or ""))
-    return await handler(message, data)
-
-
 def markup(keyboard: Keyboard) -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup(inline_keyboard=[
         [InlineKeyboardButton(text=label, callback_data=data) for label, data in row]
