@@ -202,12 +202,16 @@ def waiting_block(s: Session) -> str:
                            t(s.lang, "txt_waiting_hint"))
 
 
-def chat_notes(s: Session, notes) -> str:
+def chat_notes(s: Session, notes, date_found: bool, rate_found: bool) -> str:
     """Sent once, just above the panel, after a chat is read into the session:
-    a request to check the table, and each guess the model made."""
-    if not notes:
-        return t(s.lang, "txt_generated")
-    lines = ["• {} — {}".format(e(bidi_safe(p.handle or p.name)), e(note)) for p, note in notes]
+    a request to check the table, then the session's date and table price and
+    where each came from, then each guess the model made about a player."""
+    rate = t(s.lang, "txt_rate_line", rate=s.rate, cur=s.currency)
+    session_line = "• {} — {} {}".format(
+        t(s.lang, "lbl_note_session"),
+        t(s.lang, "txt_note_date_found" if date_found else "txt_note_date_kept", date=s.date),
+        t(s.lang, "txt_note_rate_found" if rate_found else "txt_note_rate_default", rate=rate))
+    lines = [session_line] + ["• {} — {}".format(e(bidi_safe(p.handle or p.name)), e(note)) for p, note in notes]
     return "{} {}\n{}".format(t(s.lang, "txt_generated"), t(s.lang, "lbl_guesses"), "\n".join(lines))
 
 

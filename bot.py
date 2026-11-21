@@ -294,7 +294,8 @@ async def read_chat_into(session: Session, chat: str) -> bool:
     if not touched:
         await rewrite(status, t(session.lang, "txt_chat_failed"))
         return False
-    await rewrite(status, chat_notes(session, notes))
+    date_found = parse_date(data.get("date") or "") is not None
+    await rewrite(status, chat_notes(session, notes, date_found, bool(data.get("rate"))))
     return True
 
 
