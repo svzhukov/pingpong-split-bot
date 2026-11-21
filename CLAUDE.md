@@ -14,4 +14,8 @@ Close every reply that touches this bot — a change or just an answer about it 
 
 ## The repo is public
 
-[svzhukov/pingpong-split-bot](https://github.com/svzhukov/pingpong-split-bot) is a public GitHub repo. The server address, the token and `pingpong.db` (real players' names and group chat ids) live only in gitignored files — never write any of them into a tracked file.
+[svzhukov/pingpong-split-bot](https://github.com/svzhukov/pingpong-split-bot) is a public GitHub repo. The server address, the token, the Anthropic API key and `pingpong.db` (real players' names and group chat ids) live only in gitignored files — never write any of them into a tracked file. The same goes for real players' names anywhere, including examples in `chat_prompt.md` and the guide: use made-up ones (Миша, Маша).
+
+## Reading a chat is tested in the lab first
+
+The test bench for `chat_prompt.md`, `chat_schema.json` and the input `chat_ai.py` builds is `../pingpong-split-lab` — outside this repo because its chats are real. Before changing any of them, read its `README.md`; after, run its cases (free, on the Max login) and only then commit.
