@@ -295,7 +295,7 @@ async def read_chat_into(session: Session, chat: str) -> bool:
         await rewrite(status, t(session.lang, "txt_chat_failed"))
         return False
     date_found = parse_date(data.get("date") or "") is not None
-    await rewrite(status, chat_notes(session, notes, date_found, bool(data.get("rate"))))
+    await rewrite(status, chat_notes(session, notes, date_found, bool(data.get("rate")), chat_ai.comment_of(chat)))
     return True
 
 

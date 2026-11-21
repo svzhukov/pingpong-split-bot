@@ -94,6 +94,8 @@ STRINGS = {
     "txt_generated": {"ru": "🤖 Таблица была сгенерирована из переписки, пожалуйста, перепроверьте и отредактируйте.",
                       "en": "🤖 This table was generated from the chat, please check and edit it."},
     "lbl_guesses": {"ru": "Вот мои предположения:", "en": "Here are my guesses:"},
+    "lbl_guesses_with": {"ru": "Вот мои предположения с учётом ваших дополнительных инструкций «{comment}»:",
+                         "en": "Here are my guesses, taking your extra instructions into account: “{comment}”"},
     "lbl_note_session": {"ru": "Сессия", "en": "Session"},
     "txt_note_date_found": {"ru": "дата {date}, по времени сообщений.", "en": "date {date}, from the message times."},
     "txt_note_date_kept": {"ru": "дату в переписке не нашёл, стоит {date} — поправьте в настройках, если неверно.",

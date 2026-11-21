@@ -59,6 +59,14 @@ def transcript(entries: List[Tuple[datetime, str, str]], comment: Optional[str] 
     return "\n\n".join(blocks)
 
 
+COMMENT_RE = re.compile(r"<{0}>\n(.*?)\n</{0}>".format(COMMENT_TAG), re.S)
+
+
+def comment_of(chat: str) -> Optional[str]:
+    found = COMMENT_RE.search(chat or "")
+    return found.group(1).strip() if found else None
+
+
 def client():
     global _client
     if _client is None:

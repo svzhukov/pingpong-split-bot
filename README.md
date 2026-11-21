@@ -257,7 +257,9 @@ reading takes seconds and the panel waits meanwhile, then turns into the result:
 20.11.26, по времени сообщений. Цена стола по умолчанию — 16 ₾/час, поправьте в
 настройках, если неверно.` (each half says whether it came from the chat; the
 bot writes this line itself, not the model), then one line per player it guessed
-about, `• @misha — <note>`, with the panel posted right under it. A
+about, `• @misha — <note>`, with the panel posted right under it. When the
+forward came with a comment, `Вот мои предположения` continues `с учётом ваших
+дополнительных инструкций «<comment>»:`, its own «» turned into „“. A
 chat sent as a reply to an existing panel moves the panel down below that
 message, so the guesses always sit right above the table. A name already in the
 session is updated rather than added twice. Nothing is read unless

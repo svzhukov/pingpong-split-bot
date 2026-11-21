@@ -202,17 +202,24 @@ def waiting_block(s: Session) -> str:
                            t(s.lang, "txt_waiting_hint"))
 
 
-def chat_notes(s: Session, notes, date_found: bool, rate_found: bool) -> str:
+def chat_notes(s: Session, notes, date_found: bool, rate_found: bool, comment: Optional[str] = None) -> str:
     """Sent once, just above the panel, after a chat is read into the session:
-    a request to check the table, then the session's date and table price and
-    where each came from, then each guess the model made about a player."""
+    a request to check the table, quoting the comment typed with the forward
+    when there was one, then the session's date and table price and where each
+    came from, then each guess the model made about a player."""
     rate = t(s.lang, "txt_rate_line", rate=s.rate, cur=s.currency)
     session_line = "• {} — {} {}".format(
         t(s.lang, "lbl_note_session"),
         t(s.lang, "txt_note_date_found" if date_found else "txt_note_date_kept", date=s.date),
         t(s.lang, "txt_note_rate_found" if rate_found else "txt_note_rate_default", rate=rate))
     lines = [session_line] + ["• {} — {}".format(e(bidi_safe(p.handle or p.name)), e(note)) for p, note in notes]
-    return "{} {}\n{}".format(t(s.lang, "txt_generated"), t(s.lang, "lbl_guesses"), "\n".join(lines))
+    if comment:
+        # quotes inside a quotation are „…“ in Russian, so the comment's own «» become those
+        quoted = comment.replace("«", "„").replace("»", "“")
+        guesses = t(s.lang, "lbl_guesses_with", comment=e(quoted))
+    else:
+        guesses = t(s.lang, "lbl_guesses")
+    return "{} {}\n{}".format(t(s.lang, "txt_generated"), guesses, "\n".join(lines))
 
 
 def solo_block(s: Session) -> str:
