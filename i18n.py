@@ -91,6 +91,7 @@ STRINGS = {
     "txt_status_editing": {"ru": "редактируется {name}", "en": "editing by {name}"},
     "txt_locked": {"ru": "Сессия рассчитана — нажмите «Исправить»",
                    "en": "Session is calculated — tap “Fix”"},
+    "txt_solo_home": {"ru": "Не участвуют в переводах: {names}", "en": "Not in transfers: {names}"},
     "txt_solo_note": {"ru": "{names} — вне переводов. Разница разошлась поровну между остальными.",
                       "en": "{names} — outside transfers. The difference is spread evenly across the rest."},
     "txt_solo_over": {"ru": "переплата {money}", "en": "overpaid {money}"},

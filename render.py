@@ -202,6 +202,13 @@ def waiting_block(s: Session) -> str:
                            t(s.lang, "txt_waiting_hint"))
 
 
+def solo_block(s: Session) -> str:
+    solo = [p for p in s.players if p.excluded]
+    if not solo:
+        return ""
+    return t(s.lang, "txt_solo_home", names=", ".join(e(bidi_safe(p.handle or p.name)) for p in solo))
+
+
 def session_title(s: Session, r: Result) -> str:
     parts = [t(s.lang, "title_session", date=s.date)]
     if r.slices:
@@ -276,7 +283,8 @@ def player_rows(items):
 
 def screen_home(s: Session, r: Result):
     if s.status == "closed":
-        return status_title(s, r), home_body(s, r), \
+        body = "\n\n".join(part for part in [solo_block(s), home_body(s, r)] if part)
+        return status_title(s, r), body, \
             [[(t(s.lang, "btn_unlock"), "unlock"),
               (t(s.lang, "btn_export"), "export")]]
 
@@ -293,7 +301,7 @@ def screen_home(s: Session, r: Result):
     else:
         keyboard.append([(t(s.lang, "btn_settle" + waiting), "post")])
 
-    body = "\n\n".join(part for part in [waiting_block(s), home_body(s, r)] if part)
+    body = "\n\n".join(part for part in [waiting_block(s), solo_block(s), home_body(s, r)] if part)
     return status_title(s, r), body, keyboard
 
 

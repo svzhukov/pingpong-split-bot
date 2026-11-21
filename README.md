@@ -276,7 +276,9 @@ always did.
 
 A player left out of the transfers — settling in cash, no card, no contact to
 send to. Their contribution still counts; the difference is spread evenly
-across everyone else.
+across everyone else. While anyone has it on, the main screen says so above the
+tables — `Не участвуют в переводах: @misha` — under the list of who still has
+something to fill in.
 
 ## Closing without settling
 
