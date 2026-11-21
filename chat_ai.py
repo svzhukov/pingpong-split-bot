@@ -41,10 +41,19 @@ def looks_like_chat(text: str) -> bool:
     return bool(HEADER_RE.search(text or ""))
 
 
-def transcript(entries: List[Tuple[datetime, str, str]]) -> str:
+COMMENT_LIMIT = 500
+COMMENT_TAG = "sender_comment"
+
+
+def transcript(entries: List[Tuple[datetime, str, str]], comment: Optional[str] = None) -> str:
     """Forwarded messages as the text a copied chat would be: one header per
-    message, in the order they were sent. Times stay in UTC and say so."""
+    message, in the order they were sent. Times stay in UTC and say so. A
+    comment typed with the forward goes first, in its own marked block, which
+    the prompt reads as facts about the session and never as instructions."""
     blocks = []
+    if comment and comment.strip():
+        cleaned = comment.replace("<" + COMMENT_TAG, "").replace("</" + COMMENT_TAG, "").strip()
+        blocks.append("<{0}>\n{1}\n</{0}>".format(COMMENT_TAG, cleaned[:COMMENT_LIMIT]))
     for sent, sender, text in sorted(entries, key=lambda entry: entry[0]):
         blocks.append("{}, [{} UTC]:\n{}".format(sender, sent.strftime("%d %b %Y at %H:%M:%S"), text.strip()))
     return "\n\n".join(blocks)

@@ -230,7 +230,14 @@ instead of anyone typing a table:
   them until 2 seconds pass with nothing new, then reads them together. The
   session opens in that private chat with its settings; copy it to the group with
   📋 Копировать сессию if wanted. Forwards carry each sender's @username unless
-  they hide their account, so players come in tagged.
+  they hide their account, so players come in tagged. A comment typed with the
+  forward (`Gp отдал свои 5 Илье`) arrives as an ordinary message of its own, so
+  in a private chat any typed message waits 1.5 seconds: if forwards follow, or
+  are already being gathered, it goes to the model with them as context, capped
+  at 500 characters, in a `<sender_comment>` block the prompt treats as facts
+  about the session and never as instructions; otherwise it is handled as a
+  normal reply. The model can only answer in the fixed schema, so a comment
+  asking for anything else changes nothing.
 
 Claude Haiku (`MODEL` in `chat_ai.py`) reads the text with the instructions in
 `chat_prompt.md` and answers in the shape `chat_schema.json` fixes: the date the

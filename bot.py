@@ -859,8 +859,14 @@ def tap_paid(s: Session, parts):
 
 
 FORWARD_QUIET = 2.0
+# how long a typed message in a private chat waits to see whether a forwarded
+# batch follows it — Telegram sends the comment typed with a forward as an
+# ordinary message of its own
+COMMENT_WAIT = 1.5
 _forwards: Dict[int, List[Tuple[datetime, str, str]]] = {}
 _forward_timers: Dict[int, asyncio.Task] = {}
+_comments: Dict[int, str] = {}
+_held: Dict[int, Tuple[asyncio.Task, str]] = {}
 
 
 def sender_of(origin) -> str:
@@ -885,6 +891,10 @@ async def on_forward(message: Message):
 
     chat_id = message.chat.id
     _forwards.setdefault(chat_id, []).append((message.forward_origin.date, sender_of(message.forward_origin), text))
+    held = _held.pop(chat_id, None)
+    if held:
+        held[0].cancel()
+        _comments[chat_id] = held[1]
     timer = _forward_timers.get(chat_id)
     if timer:
         timer.cancel()
@@ -897,15 +907,36 @@ async def flush_forwards(message: Message) -> None:
     # from here on a newer forward starts its own batch instead of cancelling this one
     _forward_timers.pop(chat_id, None)
     entries = _forwards.pop(chat_id, [])
+    comment = _comments.pop(chat_id, None)
     if not entries:
         return
     async with chat_lock(chat_id):
-        await split_with(message, chat_ai.transcript(entries))
+        await split_with(message, chat_ai.transcript(entries, comment))
 
 
 @dp.message(F.text)
 async def on_text(message: Message):
-    async with chat_lock(message.chat.id):
+    chat_id = message.chat.id
+    text = (message.text or "").strip()
+    if message.chat.type == "private" and chat_ai.enabled() and not text.startswith("/"):
+        if chat_id in _forward_timers:
+            # a batch is being gathered right now, so this is its comment
+            _comments[chat_id] = text
+            return
+        _held[chat_id] = (asyncio.create_task(release_text(message)), text)
+        return
+
+    async with chat_lock(chat_id):
+        await handle_text(message)
+
+
+async def release_text(message: Message) -> None:
+    """No forward followed, so the typed message was meant for the panel after all."""
+    chat_id = message.chat.id
+    await asyncio.sleep(COMMENT_WAIT)
+    if _held.get(chat_id, (None,))[0] is asyncio.current_task():
+        _held.pop(chat_id)
+    async with chat_lock(chat_id):
         await handle_text(message)
 
 
