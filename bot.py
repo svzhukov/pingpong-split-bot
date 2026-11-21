@@ -222,7 +222,7 @@ def apply_paid(session: Session, player: Player, paid) -> None:
         session.set_paid(player.id, 0)
 
 
-NOTE_LIMIT = 80
+NOTE_LIMIT = 160
 
 
 def apply_chat(session: Session, data: dict) -> int:

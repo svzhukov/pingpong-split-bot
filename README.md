@@ -234,13 +234,14 @@ instead of anyone typing a table:
 Claude Haiku (`MODEL` in `chat_ai.py`) reads the text with the instructions in
 `chat_prompt.md` and answers in the shape `chat_schema.json` fixes: the date the
 games were played, a table price per hour when a message states one, and per
-player their windows, what they paid, whether they settle separately, and a note
-on anything it guessed. A stated price applies to that session only; otherwise
+player their windows, what they paid, whether they settle separately, and a
+one-sentence note on anything it guessed or worked out, such as a guessed window
+or money moved from one player to another. A stated price applies to that session only; otherwise
 the group's saved rate does. Money a guest handed to a player moves from that
 player's payment to the guest, who then settles separately. Unmentioned payment
 is 0; a duration alone, or only a start or an end, becomes a guessed window.
 
-Whatever it guessed is listed under the panel title, `🤖 Угадано из переписки:`,
+Whatever it guessed is listed under the panel title, after `🤖 Таблица была сгенерирована из переписки, пожалуйста, перепроверьте и отредактируйте. Вот мои предположения:`,
 one line per player, until the session is settled. A name already in the
 session is updated rather than added twice. Nothing is read unless
 `ANTHROPIC_API_KEY` is set in `.env`; a chat longer than 12 000 characters is

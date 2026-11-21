@@ -10,7 +10,7 @@ People in the chat report when they played and what they paid toward the tables.
 - **windows**: when they played, 24-hour `HH:MM`. Normalize every form: `19;45` → `19:45`, `с 19 до 22` → `19:00`–`22:00`, `20.10` → `20:10`. The session is one evening, so a bare `9` or `10` next to evening times means 21:00 or 22:00. Someone who left and came back has several windows. Empty when unknown.
 - **paid**: the money that person put toward the session. Anyone whose messages mention no payment paid `0`.
 - **settles_separately**: `true` for a person whose only payment is money handed to another player and who closed no table themselves; `false` for everyone else.
-- **note**: what you guessed for this player, in a few words in the chat's language, without their name: `время по длительности 1:20`. `null` when nothing about them was guessed. Never describe what a message states plainly.
+- **note**: one short sentence in the chat's language, without their name, saying what you guessed or worked out for this player and from what: a guessed window (`время по длительности 1:20, окончание по уходу Миши в 22:00 — догадка`), money moved between players (`закрыл стол за 37.80, минус 10, переданные товарищем`), an unknown sender. `null` when their messages state everything plainly. A note is about that player only, always in the chat's language: never the session date, and never a missing time, which the bot already shows.
 
 ## Reading the chat
 
@@ -25,7 +25,7 @@ People in the chat report when they played and what they paid toward the tables.
 - An amount a person reports is what they paid the club when they closed a table: `оплатил`, `закрыл`, or a bare amount next to a table all mean the sender paid it.
 - When a person gives both a total and per-table amounts, the per-table amounts are exact and the total is rounded: `заплатил 50`, `17 за 6`, `34 за 7` → `51`.
 - A guest's payment reported by a player (`Tom paid 5`, `оставил 10`) was cash handed to that player unless the chat says otherwise.
-- Money handed to a player is not paid to the club: the giver paid it, and the receiver's own payment drops by it, so the total stays the same. Example: Миша closed a table for 37.80 and a friend left him 10 → Миша `27.8`, the friend `10`.
+- Money handed to a player is not paid to the club: the giver paid it, and the receiver's own payment drops by it, so the total stays the same. Both sides always change together: the giver's `paid` is the amount handed over, never `0`, and the receiver's is lower by exactly that. Example: Миша closed a table for 37.80 and a friend left him 10 → Миша `27.8`, the friend `10`.
 - A person reported only with a duration (`он играл 1:20`) gets a window of that length ending when the person who reported them stopped playing (or, if that's unknown, at the session's latest end time), with a note that the window is a guess.
 - A person who gives only when they stopped (`играл до 00:10`) starts at the session's earliest start; one who gives only when they started ends at the session's latest end. Note which side is a guess.
 - A quoted or replied-to message is context. Its author is a player only if they report playing themselves.
