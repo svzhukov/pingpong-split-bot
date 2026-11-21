@@ -60,7 +60,8 @@ open -e .env          # paste the token after TELEGRAM_BOT_TOKEN=
 **Disable**. Without this the bot can't see plain messages in a group, so
 pasting a table won't work.
 
-**4. Install and run.**
+**4. Install and run.** Python 3.10 or newer — the Anthropic SDK needs it (the
+server runs 3.12; macOS's built-in `python3` is 3.9, so make the venv with a newer one).
 
 ```bash
 python3 -m venv .venv
