@@ -253,6 +253,11 @@ and their transfers grow by it. Only a read chat can set a negative amount; type
 amounts never go below 0, and 💰 Взнос steps a negative one from where it is.
 Unmentioned payment
 is 0; a duration alone, or only a start or an end, becomes a guessed window.
+A guest who left money but no time (settles separately, no windows) gets the
+window, ending when the session does, whose share comes closest to what they
+left — fitted by the bot in 5-minute steps (`fit_span` in `model.py`), not the
+model, and said in their note: `Время по оставленным 10 ₾: 20:25 - 22:00, до
+конца сессии — догадка.`
 
 Every chat read posts one message of its own — the only message besides the
 settle-up the bot posts. It appears at once as `🤖 Читаю переписку…`, since

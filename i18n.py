@@ -104,6 +104,8 @@ STRINGS = {
                               "en": "Table price is the default {rate}, change it in Settings if that's wrong."},
     "txt_note_rate_found": {"ru": "Цена стола — {rate}, взята из переписки.",
                             "en": "Table price is {rate}, taken from the chat."},
+    "txt_note_fitted": {"ru": "Время по оставленным {money}: {span}, до конца сессии — догадка.",
+                        "en": "Time from the {money} they left: {span}, up to the session's end — a guess."},
     "txt_chat_reading": {"ru": "🤖 Читаю переписку…", "en": "🤖 Reading the chat…"},
     "txt_chat_failed": {"ru": "Не получилось прочитать переписку. Попробуйте ещё раз или пришлите таблицу.",
                         "en": "Couldn't read the chat. Try again, or send a table."},

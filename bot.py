@@ -20,7 +20,7 @@ import chat_ai
 from i18n import LANGUAGES, t
 from model import (BLANK, CURRENCY_RE, DAY, DEFAULT_LENGTH, NAME_LIMIT, SYMBOL_BY_CODE, Player,
                    Session, clamp_span,
-                   compute, extract_span, fmt_money, parse_paid, parse_roster,
+                   compute, extract_span, fit_span, fmt_money, fmt_span, parse_paid, parse_roster,
                    parse_amount_note, parse_table, sheet_export_url,
                    COPIED_FIELDS, ROUNDING_STEPS, copy_code, new_id, parse_date, parse_entry, parse_time, shift_date,
                    today, transfer_minimum)
@@ -263,6 +263,16 @@ def apply_chat(session: Session, data: dict) -> Tuple[int, List[Tuple[Player, st
         if note:
             notes[player.id] = (player, note[:NOTE_LIMIT])
         touched.add(player.id)
+
+    # after every player, so the window is fitted against everyone's time and money
+    for player_id in touched:
+        player = session.player(player_id)
+        if player.spans or not player.excluded or not fit_span(session, player):
+            continue
+        fitted = t(session.lang, "txt_note_fitted", money=fmt_money(session.paid_by(player_id), session.currency),
+                   span=fmt_span(player.frm, player.to))
+        note = notes[player_id][1] + " " + fitted if player_id in notes else fitted
+        notes[player_id] = (player, note)
 
     return len(touched), list(notes.values())
 

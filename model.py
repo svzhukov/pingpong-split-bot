@@ -911,6 +911,32 @@ def compute(session: Session) -> Result:
     )
 
 
+FIT_STEP = 5
+
+
+def fit_span(session: Session, player: Player) -> bool:
+    """A guest a chat gives money for but no time: the window ending when the
+    session does whose share comes closest to what they left, in 5-minute
+    steps, the shortest on a tie and the whole session at most. False, with no
+    window, when nobody else has a time to fit it against."""
+    others = [p for p in session.players if p.spans and p is not player]
+    paid = session.paid_by(player.id)
+    if not others or paid <= 0:
+        return False
+
+    start, end = min(p.frm for p in others), max(p.to for p in others)
+    best = None
+    for minutes in list(range(FIT_STEP, end - start, FIT_STEP)) + [end - start]:
+        player.spans = [[end - minutes, end]]
+        owed = next(row.owed for row in compute(session).rows if row.id == player.id)
+        if best is None or abs(owed - paid) < best[0] - 0.005:
+            best = (abs(owed - paid), minutes)
+
+    player.spans = []
+    player.add_span(end - best[1], end)
+    return True
+
+
 # every ordering of payers × receivers is tried on a slow one-core VM; past this
 # many combinations (4 payers × 4 receivers is 576, 5 × 3 is 720, 5 × 4 is
 # 2 880) each side's orderings are tried only against the other side kept
