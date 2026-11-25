@@ -246,8 +246,11 @@ games were played, a table price per hour when a message states one, and per
 player their windows, what they paid, whether they settle separately, and a
 note of a sentence or two on anything it guessed or worked out, such as a guessed
 window or money moved from one player to another. A stated price applies to that session only; otherwise
-the group's saved rate does. Money a guest handed to a player moves from that
-player's payment to the guest, who then settles separately. A receiver who paid
+the group's saved rate does. A payment one person reports for someone else
+(`Маша заплатила 17` in Миша's message) is cash handed to the reporter, whether
+the payer is a guest or writes in the chat too, and a sender is recognised under
+another spelling of their name (`Маша` for `Masha`). That money moves from the
+reporter's payment to the payer, who then settles separately. A receiver who paid
 nothing themselves goes below zero, `−5 ₾`: they hold that money for the group,
 and their transfers grow by it. Only a read chat can set a negative amount; typed
 amounts never go below 0, and 💰 Взнос steps a negative one from where it is.
