@@ -417,7 +417,12 @@ transfers always cancel exactly.
 
 Transfers are planned to avoid crumbs first: an amount to pay is never split into
 transfers below the **minimum transfer** in Settings, even at the cost of one more
-transfer, while an amount to pay or to receive that is itself below it still goes in one. The
+transfer. A whole balance that is itself below it gets no transfer at all: it moves
+onto the biggest receiver (`drop_crumbs` in `model.py`), who takes an overpayer's
+crumb and goes without a small debtor's, so the table still shows that balance
+while the transfers leave it out. It stays a transfer when no receiver reaches the
+minimum, and a small debt stays when dropping it would leave the biggest receiver
+below the minimum. The
 minimum defaults to three of the smallest money step — 3 ₾, 30 ₽, 300 ֏
 (`MIN_TRANSFER_STEPS`) — can be nudged or typed in, and goes back to that default
 when the currency changes. After that, the fewest payments, and among plans with

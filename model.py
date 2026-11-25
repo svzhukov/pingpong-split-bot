@@ -1052,12 +1052,35 @@ def mend(transfers: List[Transfer], minimum: float, step: float) -> List[Transfe
     return [Transfer(frm=a, to=b, amount=c) for a, b, c in plan]
 
 
+def drop_crumbs(owing, due, minimum: float):
+    """A whole balance below the minimum gets no transfer of its own: it moves
+    onto the biggest receiver, who takes an overpayer's crumb and goes without
+    a small debtor's. Left as is when no receiver reaches the minimum, and
+    a small debt stays when dropping it would leave the receiver below it."""
+    def small(x):
+        return x[1] < minimum - 0.005
+
+    if not due or small(due[0]):
+        return owing, due
+
+    biggest = due[0][1] + sum(amount for _, amount in due[1:] if amount < minimum - 0.005)
+    due = [(due[0][0], biggest)] + [x for x in due[1:] if not small(x)]
+
+    crumbs = sum(amount for _, amount in owing if amount < minimum - 0.005)
+    if crumbs and biggest - crumbs >= minimum - 0.005:
+        due[0] = (due[0][0], biggest - crumbs)
+        owing = [x for x in owing if not small(x)]
+    return owing, due
+
+
 def settle(rows: List[Row], minimum: float = 0.0, step: float = 0.0) -> List[Transfer]:
     rows = [r for r in rows if not r.excluded]
     owing = sorted([(r, -r.settle_balance) for r in rows if r.settle_balance < -0.005],
                    key=lambda x: -x[1])
     due = sorted([(r, r.settle_balance) for r in rows if r.settle_balance > 0.005],
                  key=lambda x: -x[1])
+    owing, due = drop_crumbs(owing, due, minimum)
+    due.sort(key=lambda x: -x[1])
 
     best = staircase(owing, due)
     best_score = plan_score(best, minimum)
